@@ -1,0 +1,42 @@
+﻿# Vendored from RichardvZyl/engineering-standards. Read-only downstream.
+
+# Let git decide what is text, then normalise it in the repository.
+* text=auto
+
+# Windows-first toolchain: these are CRLF in the working tree.
+*.cs        text eol=crlf
+*.csproj    text eol=crlf
+*.sln       text eol=crlf -merge
+*.props     text eol=crlf
+*.targets   text eol=crlf
+*.sql       text eol=crlf
+*.ps1       text eol=crlf
+*.psm1      text eol=crlf
+*.psd1      text eol=crlf
+*.md        text eol=crlf
+*.json      text eol=crlf
+*.yml       text eol=crlf
+*.yaml      text eol=crlf
+
+# These break if they are not LF, regardless of platform.
+*.sh        text eol=lf
+Dockerfile  text eol=lf
+*.bash      text eol=lf
+
+# Binary: never diffed, never normalised.
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.ico       binary
+*.pdf       binary
+*.zip       binary
+*.dll       binary
+*.exe       binary
+*.snk       binary
+*.bacpac    binary
+
+# Generated or vendored: excluded from language stats and collapsed in diffs.
+standards/**   linguist-documentation
+*.Designer.cs  linguist-generated=true
+*.g.cs         linguist-generated=true

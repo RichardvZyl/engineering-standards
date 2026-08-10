@@ -1,0 +1,25 @@
+# Deny-token digest list for Test-NoProprietaryLeak.ps1
+#
+# One SHA-256 per line, of a LOWERCASED single token. The guard tokenises every
+# scanned file on /[^a-z0-9]+/ and compares each token's digest against this list.
+#
+# WHY HASHES AND NOT PLAINTEXT
+# This repository is public. A plaintext deny-list would publish the very org,
+# client and product names it exists to keep out — the guard would become the leak.
+#
+# WHAT THIS IS NOT
+# This is obfuscation, not secrecy. Single lowercase tokens fall to a dictionary
+# attack in seconds. It stops a name being *published in this file*; it does not
+# make the list confidential. Do not treat it as a secret store, and never put a
+# credential here.
+#
+# ADD A TOKEN
+#   pwsh ./scripts/Test-NoProprietaryLeak.ps1 -AddToken 'SomeClientName'
+#
+# Comments and blank lines are ignored. Order is irrelevant.
+
+f0372be86ef1f67be08a4a44b64e8f98a25e59bfdb7c188af4bc7d7a26d543ff
+7f2738d8cbe803d8548d0e6466813f02fb9b0f1e92a45d62eac12f42c588a60e
+2d7f45d7b98b427f824e0c643295583e9cf013faffdb5e7095d070ff85276bf4
+e44f3a034e8a9e716a912921b20edc81c7c851fb4e4c4233bf3ed1c684e27a78
+d53849e3e0b14fd4a0e9873b6041dd89c322fd4805977b255a23cb8c132723df

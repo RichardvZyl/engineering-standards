@@ -1,0 +1,53 @@
+﻿# Vendored from RichardvZyl/engineering-standards. Read-only downstream.
+
+## Private context — never committed, in any repo, ever.
+## Test-NoProprietaryLeak.ps1 fails the build if one of these is tracked anyway.
+*.private.md
+*.private.json
+secrets/
+.env
+.env.*
+!.env.example
+appsettings.*.Local.json
+
+## .NET build output
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+artifacts/
+*.user
+*.suo
+*.userprefs
+*.dbmdl
+*.pfx
+*.snk
+
+## Test and coverage
+[Tt]est[Rr]esult*/
+coverage*.json
+coverage*.xml
+coverage*.info
+*.coverage
+*.trx
+BenchmarkDotNet.Artifacts/
+
+## IDE
+.vs/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.shared.json
+.idea/
+*.swp
+*~
+
+## Tooling
+node_modules/
+.tools/
+*.nupkg
+!.nuget/packages.lock.json
+
+## OS
+[Tt]humbs.db
+[Dd]esktop.ini
+.DS_Store
