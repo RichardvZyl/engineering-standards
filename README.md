@@ -10,29 +10,34 @@ copy falls behind upstream.
 
 Drift you can see in a PR is a decision. Drift you cannot see is just entropy.
 
+> **Status: early.** The layout and the rules below are settled; most of the content is not
+> written yet. **One standard exists so far** — `04-documentation-layout.md`. The sync workflow,
+> `templates/` and `scripts/Sync-Standards.ps1` are described here but not yet built. Read the
+> table below as the plan, not the inventory; ✅ marks what is actually present.
+
 ---
 
 ## What is here
 
-| Path | Synced downstream? | Purpose |
-|---|---|---|
-| `standards/` | **Yes** — the synced set | The conventions themselves. Read-only in consuming repos. |
-| `templates/` | No — seeded once | Starting points a repo edits and owns: `AGENTS.md`, ADR scaffolding, domain-doc template, PR template. |
-| `scripts/` | No | `Sync-Standards.ps1`, `Test-NoProprietaryLeak.ps1`. |
-| `.github/workflows/` | `standards-sync.yml` only | Sync opens the drift PR downstream; verify runs here. |
+| Path | Synced downstream? | Purpose | |
+|---|---|---|---|
+| `standards/` | **Yes** — the synced set | The conventions themselves. Read-only in consuming repos. | ✅ |
+| `templates/` | No — seeded once | Starting points a repo edits and owns: `AGENTS.md`, ADR scaffolding, domain-doc template, PR template. | planned |
+| `scripts/` | No | `Test-NoProprietaryLeak.ps1` ✅ · `Sync-Standards.ps1` planned | partial |
+| `.github/workflows/` | `standards-sync.yml` only | Sync opens the drift PR downstream; verify runs here. | planned |
 
 ### The standards set
 
-| File | Owns |
-|---|---|
-| `00-response-and-collaboration.md` | How an assistant should answer: density not brevity, where to go wide |
-| `01-architecture-defaults.md` | Multi-tenancy, CQRS, result types, idempotency, contention |
-| `02-database-standards.md` | The database **rules** — money, SARGability, indexing, isolation, scale |
-| `03-engineering-hygiene.md` | Style, git, compliance, tests |
-| `04-documentation-layout.md` | Where docs live and which file owns what |
-| `05-decision-records.md` | ADR format, when one is required |
-| `06-review-standards.md` | Review tiers and what each looks for |
-| `07-repo-layout.md` | Directory conventions |
+| File | Owns | |
+|---|---|---|
+| `00-response-and-collaboration.md` | How an assistant should answer: density not brevity, where to go wide | planned |
+| `01-architecture-defaults.md` | Multi-tenancy, CQRS, result types, idempotency, contention | planned |
+| `02-database-standards.md` | The database **rules** — money, SARGability, indexing, isolation, scale | planned |
+| `03-engineering-hygiene.md` | Style, git, compliance, tests | planned |
+| `04-documentation-layout.md` | Where docs live and which file owns what, and **planning item identifiers** | ✅ |
+| `05-decision-records.md` | ADR format, when one is required | planned |
+| `06-review-standards.md` | Review tiers and what each looks for | planned |
+| `07-repo-layout.md` | Directory conventions | planned |
 
 ---
 
