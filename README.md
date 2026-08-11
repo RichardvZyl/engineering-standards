@@ -1,4 +1,4 @@
-﻿# engineering-standards
+# engineering-standards
 
 My engineering conventions, in one place, in a form a repo can actually consume.
 
@@ -10,10 +10,11 @@ copy falls behind upstream.
 
 Drift you can see in a PR is a decision. Drift you cannot see is just entropy.
 
-> **Status: early.** The layout and the rules below are settled; most of the content is not
-> written yet. **One standard exists so far** — `04-documentation-layout.md`. The sync workflow,
-> `templates/` and `scripts/Sync-Standards.ps1` are described here but not yet built. Read the
-> table below as the plan, not the inventory; ✅ marks what is actually present.
+> **Status.** All eight standards and `templates/` are written (`standards/VERSION` 0.2.0). The
+> **sync half is not built yet** — `scripts/Sync-Standards.ps1` and
+> `.github/workflows/standards-sync.yml` are described below but do not exist, so nothing is
+> currently kept current automatically. Copy `standards/` in by hand until they land. ✅ below
+> marks what is present.
 
 ---
 
@@ -22,22 +23,22 @@ Drift you can see in a PR is a decision. Drift you cannot see is just entropy.
 | Path | Synced downstream? | Purpose | |
 |---|---|---|---|
 | `standards/` | **Yes** — the synced set | The conventions themselves. Read-only in consuming repos. | ✅ |
-| `templates/` | No — seeded once | Starting points a repo edits and owns: `AGENTS.md`, ADR scaffolding, domain-doc template, PR template. | planned |
-| `scripts/` | No | `Test-NoProprietaryLeak.ps1` ✅ · `Sync-Standards.ps1` planned | partial |
-| `.github/workflows/` | `standards-sync.yml` only | Sync opens the drift PR downstream; verify runs here. | planned |
+| `templates/` | No — seeded once | Starting points a repo edits and owns: `AGENTS.md`, ADR scaffolding, domain-doc template. | ✅ |
+| `scripts/` | No | `Test-NoProprietaryLeak.ps1` ✅ · `Sync-Standards.ps1` **not built** | partial |
+| `.github/workflows/` | `standards-sync.yml` only | Sync opens the drift PR downstream; verify runs here. | **not built** |
 
 ### The standards set
 
 | File | Owns | |
 |---|---|---|
-| `00-response-and-collaboration.md` | How an assistant should answer: density not brevity, where to go wide | planned |
-| `01-architecture-defaults.md` | Multi-tenancy, CQRS, result types, idempotency, contention | planned |
-| `02-database-standards.md` | The database **rules** — money, SARGability, indexing, isolation, scale | planned |
-| `03-engineering-hygiene.md` | Style, git, compliance, tests | planned |
+| `00-response-and-collaboration.md` | How an assistant should answer: density not brevity, where to go wide | ✅ |
+| `01-architecture-defaults.md` | Multi-tenancy, CQRS, result types, idempotency, contention | ✅ |
+| `02-database-standards.md` | The database **rules** — money, SARGability, indexing, isolation, scale | ✅ |
+| `03-engineering-hygiene.md` | Style, git, compliance, tests | ✅ |
 | `04-documentation-layout.md` | Where docs live and which file owns what, and **planning item identifiers** | ✅ |
-| `05-decision-records.md` | ADR format, when one is required | planned |
-| `06-review-standards.md` | Review tiers and what each looks for | planned |
-| `07-repo-layout.md` | Directory conventions | planned |
+| `05-decision-records.md` | ADR format, when one is required | ✅ |
+| `06-review-standards.md` | Review tiers and what each looks for | ✅ |
+| `07-repo-layout.md` | Directory conventions | ✅ |
 
 ---
 
@@ -46,14 +47,17 @@ Drift you can see in a PR is a decision. Drift you cannot see is just entropy.
 **New repo** — generate from this template on GitHub, then delete what you do not need.
 `templates/` is yours to edit from that moment; `standards/` is not.
 
-**Existing repo** — copy `standards/` and `.github/workflows/standards-sync.yml` in, commit,
-and the next scheduled run will keep it current.
+**Existing repo** — copy `standards/` in and commit. Once the sync workflow exists, add
+`.github/workflows/standards-sync.yml` too and the next scheduled run keeps it current; until
+then, re-copy when `standards/VERSION` changes.
 
 Either way `standards/` is **read-only downstream**. Every file under it says so in its own
 header, because a rule stated only in a README is a rule nobody reads. Disagree with a
 standard? Change it here, upstream, and let the PR carry it everywhere.
 
-### How the sync behaves
+### How the sync will behave
+
+*Not built yet — this is the intended design, not current behaviour.*
 
 Weekly cron plus `workflow_dispatch`. It fetches this repo, diffs `standards/**` against the
 local copy, and opens or updates a PR titled `Standards sync: <from> → <to>` using
