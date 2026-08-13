@@ -1,0 +1,94 @@
+# AGENTS.md — <PROJECT>
+
+<!-- SEEDED ONCE from engineering-standards. This file is YOURS from the moment it lands.
+     It is not synced and will never be overwritten. Delete every section you do not need —
+     an AGENTS.md padded with unanswered placeholders is worse than a short honest one. -->
+
+<!-- THE DIVISION THAT MATTERS
+     This file holds CONTEXT — what is true of this project only.
+     standards/ holds CONVENTIONS — how we work, true of any project.
+     A line naming a repo, org, client or product belongs HERE, never in standards/. -->
+
+## What this is
+
+<!-- REPLACE: two or three sentences. What the system does, for whom, and the one thing a
+     newcomer will otherwise get wrong. Not a feature list. -->
+
+## Conventions
+
+This repository follows the vendored standards in [`standards/`](./standards/). They are
+**read-only** — a local edit is drift the next sync pull request will fight. Disagree with one?
+Change it upstream in `engineering-standards`.
+
+Start with [`standards/00-response-and-collaboration.md`](./standards/00-response-and-collaboration.md);
+it governs how everything else is delivered.
+
+<!-- Record any DEPARTURE from the standards here, with a link to the ADR that decided it.
+     A departure that is not written down reads as a mistake to the next reader. -->
+
+| Standard | Departure | ADR |
+|---|---|---|
+| <!-- e.g. 02 § isolation --> | <!-- what we do instead --> | <!-- docs/adr/NNNN --> |
+
+## Domain routing
+
+Which document governs which directory. A reader working in a path opens the matching doc first.
+
+| Path | Domain doc |
+|---|---|
+| `src/<Area>/**` | `docs/ai/domains/<area>.md` |
+| <!-- add a row per bounded area --> | |
+
+New vocabulary goes in the domain doc, not in this file. Where a term means different things in
+different places, resolve it in the domain doc and ADR the ruling if it is hard to reverse.
+
+## Stack
+
+<!-- REPLACE: only what an assistant would otherwise guess wrong. Versions matter. -->
+
+| Layer | This project uses |
+|---|---|
+| Language / runtime | |
+| Database engine + version | |
+| ORM / data access | |
+| Messaging | |
+| Hosting | |
+
+## Tenancy and data
+
+<!-- REPLACE. This section is load-bearing: standards/01 and 02 assume tenant isolation
+     until told otherwise, and an assistant that guesses wrong here writes unsafe queries. -->
+
+- **Isolation model:** <!-- database-per-tenant | schema-per-tenant | discriminator column | single-tenant -->
+- **Tenant identifier source:** <!-- how it is resolved, and where enforcement lives -->
+- **Data classes present:** <!-- personal data, financial records, audit trail, none -->
+- **Retention obligations:** <!-- what must be kept, what must be deletable, how long -->
+
+## Running it
+
+```
+<!-- REPLACE: the exact commands. Build, test, run, and how to get a local database. -->
+```
+
+## Traps
+
+<!-- REPLACE. The highest-value section in this file, and the one most often left empty.
+     Every entry should be something that has actually cost someone an afternoon. -->
+
+- <!-- e.g. "The <X> table is written by two services; check both before changing its shape." -->
+
+## Planning
+
+Planning documents live in `docs/`; run artifacts in `docs/planning/`; decision records in
+`docs/adr/`. Item identifiers follow
+[`standards/04-documentation-layout.md`](./standards/04-documentation-layout.md) — assigned by the
+owning document, permanent, never renumbered, and cited in commit messages.
+
+<!-- REPLACE: name the owning planning document for this repo, if there is one. -->
+
+## Never
+
+- Commit a secret, in any form, in any branch. A committed secret is a rotated secret.
+- Log personal data, secrets, or anything crossing a tenant boundary.
+- Write a query against tenant-scoped data without a tenant predicate.
+- Edit anything under `standards/`.
