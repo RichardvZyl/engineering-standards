@@ -45,7 +45,7 @@ Database guidance lives in exactly three places, each with a different job:
 | Document | Owns |
 |---|---|
 | `standards/02-database-standards.md` | **The rule** — what must be true |
-| `dotnet-sql-baseline.md` *(review kit, external)* | **The review checklist** — how to spot a breach in a diff |
+| `standards/reference/dotnet-sql-baseline.md` | **The review checklist** — how to spot a breach in a diff |
 | `AI-CONTEXT.md` §5 *(public CV repo, external)* | **The public summary** |
 
 `02` states rules and **links** the baseline; it never restates it. `06-review-standards.md`
