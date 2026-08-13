@@ -32,6 +32,10 @@ coverage*.info
 *.trx
 BenchmarkDotNet.Artifacts/
 
+## Agent working state — never committed. The resume checkpoint is local state only.
+.claude/
+.agents/
+
 ## IDE
 .vs/
 .vscode/*
