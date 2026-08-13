@@ -1,0 +1,77 @@
+name: verify-standards
+
+# Runs in engineering-standards itself. This is the gate that makes the repository safe to be
+# public: the leak guard decides what must not be here, the integrity check decides what must
+# be true of what is.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          # Full history: the VERSION-bump check diffs against the pull request base.
+          fetch-depth: 0
+
+      - name: Parse every PowerShell script
+        shell: pwsh
+        run: |
+          $failed = $false
+          foreach ($file in (Get-ChildItem -Path ./scripts -Filter *.ps1 -Recurse)) {
+              $errors = $null
+              [System.Management.Automation.Language.Parser]::ParseFile(
+                  $file.FullName, [ref]$null, [ref]$errors) | Out-Null
+              if ($errors) {
+                  $failed = $true
+                  Write-Host "::error file=$($file.Name)::$($errors.Count) parse error(s)"
+                  $errors | ForEach-Object { Write-Host "  $($_.Message)" }
+              }
+          }
+          if ($failed) { exit 1 }
+          Write-Host "All scripts parse."
+
+      - name: Proprietary-leak guard
+        shell: pwsh
+        run: ./scripts/Test-NoProprietaryLeak.ps1
+
+      - name: Standards integrity
+        shell: pwsh
+        run: ./scripts/Test-StandardsIntegrity.ps1
+
+      - name: Confirm VERSION moved when standards/ did
+        if: github.event_name == 'pull_request'
+        shell: pwsh
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # A standards change that does not bump VERSION is invisible downstream: the sync
+          # PR title is built from it, so the drift lands with no signal that anything moved.
+          $changed = @(git diff --name-only $env:BASE_SHA $env:HEAD_SHA -- standards/)
+
+          if ($changed.Count -eq 0) {
+              Write-Host "No change under standards/. Nothing to check."
+              exit 0
+          }
+
+          Write-Host "Changed under standards/:"
+          $changed | ForEach-Object { Write-Host "  $_" }
+
+          if ($changed -notcontains 'standards/VERSION') {
+              Write-Host "::error::standards/ changed but standards/VERSION did not. Downstream repos would receive the change with no version signal."
+              exit 1
+          }
+
+          Write-Host "VERSION bumped alongside the change."

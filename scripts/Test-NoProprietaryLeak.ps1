@@ -152,6 +152,7 @@ $excludedFiles = @(
     $denyPath
 ) | ForEach-Object { (Resolve-Path -LiteralPath $_ -ErrorAction SilentlyContinue).Path } | Where-Object { $_ }
 
+# Fallback-path only. When git enumerates the files these are already excluded by .gitignore.
 $excludedDirs = @('.git', 'node_modules', 'bin', 'obj', '.vs')
 
 $findings = [System.Collections.Generic.List[object]]::new()
@@ -170,12 +171,54 @@ function Add-Finding {
 
 # --- Scan --------------------------------------------------------------------
 
-$files = Get-ChildItem -LiteralPath $repoRoot -Recurse -File -Force |
-    Where-Object {
-        $relative = [System.IO.Path]::GetRelativePath($repoRoot, $_.FullName)
-        $segments = $relative -split '[\\/]'
-        -not ($segments | Where-Object { $excludedDirs -contains $_ })
-    }
+# WHAT gets scanned is the whole point of this guard: everything that could reach the remote, and
+# nothing else. `git ls-files --cached --others --exclude-standard` is exactly that set - tracked
+# files plus untracked ones git is not already ignoring.
+#
+# A raw filesystem walk is the wrong set. It reads gitignored working state - agent checkpoints,
+# local scratch - which can never be published, so the guard fails on content that is not at risk.
+# A gate that is red for reasons you must learn to dismiss stops being a gate.
+#
+# The walk survives as a fallback so the script still runs outside a git checkout, where it is the
+# only option and over-scanning is the safe direction.
+
+# @() is load-bearing under Set-StrictMode: a single match returns a scalar, which has no .Count.
+$useGit = $false
+if (Get-Command git -ErrorAction SilentlyContinue) {
+    Push-Location -LiteralPath $repoRoot
+    try {
+        git rev-parse --is-inside-work-tree *> $null
+        $useGit = ($LASTEXITCODE -eq 0)
+    } finally { Pop-Location }
+}
+
+if ($useGit) {
+    Push-Location -LiteralPath $repoRoot
+    try {
+        # core.quotepath=off keeps non-ASCII names as literal paths rather than escaped octal.
+        $tracked = @(git -c core.quotepath=off ls-files --cached --others --exclude-standard)
+        if ($LASTEXITCODE -ne 0) { throw 'git ls-files failed; refusing to scan a partial set.' }
+    } finally { Pop-Location }
+
+    $files = @(
+        $tracked |
+            Where-Object { $_ } |
+            ForEach-Object { Join-Path -Path $repoRoot -ChildPath $_ } |
+            Where-Object { Test-Path -LiteralPath $_ -PathType Leaf } |
+            ForEach-Object { Get-Item -LiteralPath $_ -Force }
+    )
+}
+else {
+    Write-Warning 'git unavailable - falling back to a filesystem walk. Ignored files will be scanned.'
+    $files = @(
+        Get-ChildItem -LiteralPath $repoRoot -Recurse -File -Force |
+            Where-Object {
+                $relative = [System.IO.Path]::GetRelativePath($repoRoot, $_.FullName)
+                $segments = $relative -split '[\\/]'
+                -not ($segments | Where-Object { $excludedDirs -contains $_ })
+            }
+    )
+}
 
 foreach ($file in $files) {
 

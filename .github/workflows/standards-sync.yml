@@ -1,0 +1,120 @@
+name: standards-sync
+
+# COPY THIS FILE INTO EACH CONSUMING REPOSITORY, alongside a vendored standards/ directory.
+#
+# It opens a pull request when the local standards/ falls behind upstream. It NEVER
+# auto-merges, and it NEVER touches anything outside standards/ - the sync script enforces
+# that second guarantee itself, by refusing to write outside the directory.
+#
+# The sync script is fetched from upstream at run time rather than vendored, so a fix to the
+# script reaches every consuming repository without needing its own sync.
+
+on:
+  schedule:
+    # Mondays, 06:00 UTC. Weekly is deliberate: drift is not urgent, and a daily PR that
+    # nobody reads is a notification people learn to dismiss.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Upstream ref to sync from
+        required: false
+        default: main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  UPSTREAM_REPO: RichardvZyl/engineering-standards
+  SYNC_BRANCH: standards-sync
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Fetch the sync script from upstream
+        run: |
+          set -euo pipefail
+          REF="${{ github.event.inputs.ref || 'main' }}"
+          curl -fsSL \
+            "https://raw.githubusercontent.com/${UPSTREAM_REPO}/${REF}/scripts/Sync-Standards.ps1" \
+            -o /tmp/Sync-Standards.ps1
+          test -s /tmp/Sync-Standards.ps1
+
+      - name: Mirror standards/
+        id: sync
+        shell: pwsh
+        run: |
+          $ref = if ('${{ github.event.inputs.ref }}') { '${{ github.event.inputs.ref }}' } else { 'main' }
+          /tmp/Sync-Standards.ps1 `
+            -UpstreamRepo $env:UPSTREAM_REPO `
+            -Ref $ref `
+            -RepositoryRoot . `
+            -Confirm:$false | Out-Null
+
+      - name: Open or update the pull request
+        if: steps.sync.outputs.has_drift == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FROM_VERSION: ${{ steps.sync.outputs.from_version }}
+          TO_VERSION: ${{ steps.sync.outputs.to_version }}
+          SUMMARY: ${{ steps.sync.outputs.summary }}
+        run: |
+          set -euo pipefail
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git checkout -B "$SYNC_BRANCH"
+
+          # Only standards/ is staged. Even if something else were dirty, it does not travel.
+          git add standards/
+
+          if git diff --cached --quiet; then
+            echo "Nothing staged under standards/. Stopping."
+            exit 0
+          fi
+
+          TITLE="Standards sync: ${FROM_VERSION} → ${TO_VERSION}"
+
+          git commit -m "$TITLE" -m "$SUMMARY"
+          git push --force-with-lease origin "$SYNC_BRANCH"
+
+          BODY=$(cat <<EOF
+          Vendored \`standards/\` has fallen behind \`${UPSTREAM_REPO}\`.
+
+          **${FROM_VERSION} → ${TO_VERSION}**
+
+          ${SUMMARY}
+
+          ---
+
+          This PR touches nothing outside \`standards/\`, and nothing here was written by hand.
+
+          - **Agreeing?** Merge it.
+          - **Disagreeing with a rule?** Do not edit it here — a local edit is drift the next
+            sync will fight. Change it upstream in \`${UPSTREAM_REPO}\` and let the next sync
+            carry it everywhere.
+          - **This repository departs from a standard deliberately?** Record the departure in
+            \`AGENTS.md\` with a link to the ADR, then merge.
+          EOF
+          )
+
+          EXISTING=$(gh pr list --head "$SYNC_BRANCH" --state open --json number --jq '.[0].number // empty')
+
+          if [ -n "$EXISTING" ]; then
+            gh pr edit "$EXISTING" --title "$TITLE" --body "$BODY"
+            echo "Updated PR #${EXISTING}."
+          else
+            gh pr create --head "$SYNC_BRANCH" --title "$TITLE" --body "$BODY"
+            echo "Opened a new PR."
+          fi
+
+      - name: Report no drift
+        if: steps.sync.outputs.has_drift != 'true'
+        run: echo "standards/ is current at ${{ steps.sync.outputs.to_version }}. No PR needed."
