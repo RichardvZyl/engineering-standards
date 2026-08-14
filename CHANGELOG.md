@@ -13,6 +13,40 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+### Added — `standards/` (v0.4.0)
+
+**Cost to reverse is a first-class field on every ADR**, not only the admission test and a column
+in the options table.
+
+- `standards/VERSION` — `0.3.0` → `0.4.0`. Minor: a rule is added, and a record written under
+  `0.3.0` is now missing a required field.
+- `standards/05-decision-records.md` — new **Cost to reverse** section defining the scale
+  `Reversible | Costly | One-way`, and the header field carrying it with a clause naming what
+  makes it that. The admission test is restated against the scale: anything above `Reversible`
+  needs a record.
+
+  Four rules keep the field honest. Rate the **shipped** state rather than the branch, because a
+  clean revert today is a backfill the moment it reaches production. The header rating is of the
+  **chosen** option and must match that option's row in the table — a header and a table that
+  disagree leave the reader unable to tell which is wrong. A `One-way` record names its **escape**
+  in Consequences, so the next reader inherits the exit rather than rediscovering there is none.
+  And the rating is **never edited as costs rise** with accumulated data: it records the cost as
+  at the decision date, and correcting it would destroy the evidence of what was known then. A
+  decision that has hardened past its rating is a new record, not an amended one.
+
+- `templates/docs/adr/README.md` — index gains a **Cost to reverse** column, and the instruction
+  to read the `One-way` rows first: they are the constraints the codebase has already committed
+  to, and the rest is context that can wait.
+- `templates/docs/adr/0001-example.md` — header field filled in as a worked example; the chosen
+  option marked in the options table so the match between the two is visible.
+- `templates/PULL_REQUEST_TEMPLATE.md` — cost-to-reverse prompt under Blast radius, so the
+  question is asked at review time and not only when someone remembers an ADR is due.
+
+**Records predating adoption.** No repository consumed `0.3.0`, so nothing is upgrading between
+versions — but a repository adopting these standards may arrive with ADRs of its own. Backfill a
+rating only where the answer is still knowable from the record. Where it is not, leave the field
+absent: a missing rating reads as unknown, an invented one reads as fact.
+
 ### Added — `standards/` (v0.3.0, the initial set)
 
 Nothing has been released to a consuming repository yet, so this is the first version any
