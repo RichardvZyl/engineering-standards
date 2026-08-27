@@ -107,7 +107,10 @@ foreach ($file in $linkFiles) {
 
     # A link inside a code fence or a code span is illustrative - a format example, not a
     # reference. Strip both before matching, or every documented template trips the check.
-    $content = [regex]::Replace($content, '(?ms)^[ \t]*(```|~~~).*?^[ \t]*\1[ \t]*$', '')
+    # \r? before $ is load-bearing: .gitattributes pins *.md to CRLF, and in multiline mode
+    # $ matches before the \n with the \r still unconsumed, so without it the closing fence
+    # never matches and this strip silently removes nothing.
+    $content = [regex]::Replace($content, '(?ms)^[ \t]*(```|~~~).*?^[ \t]*\1[ \t]*\r?$', '')
     $content = [regex]::Replace($content, '`[^`\r\n]*`', '')
 
     foreach ($match in [regex]::Matches($content, $linkPattern)) {
