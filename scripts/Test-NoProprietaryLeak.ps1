@@ -141,10 +141,13 @@ $patterns = @(
     @{ Name = 'Connection string'; Severity = 'Fail'; Regex = '(?i)\b(Data Source|Initial Catalog|AccountKey|Server\s*=\s*tcp:)' }
     @{ Name = 'Bearer token'; Severity = 'Fail'; Regex = '(?i)Authorization:\s*Bearer\s+[A-Za-z0-9\-_\.]{20,}' }
     @{ Name = 'Windows user path'; Severity = 'Fail'; Regex = '(?i)[A-Z]:\\Users\\[A-Za-z0-9._-]+' }
-    # The class excludes " but NOT ' - a Windows profile folder may legitimately contain an
-    # apostrophe, and excluding it stops the match dead before it can reach \Repos\. Non-greedy
-    # so the reported match is the path itself, not everything up to the last \Repos\ on the line.
-    @{ Name = 'Local repo path'; Severity = 'Fail'; Regex = '(?i)[A-Z]:\\[^\r\n"]*?\\Repos\\' }
+    # Two things this rule got wrong, both of which made it report a clean pass:
+    #   1. The class excluded ' - a Windows profile folder may legitimately contain an
+    #      apostrophe, and excluding it stops the match dead before it can reach the segment.
+    #   2. It required a trailing separator, so a path ending AT the segment slipped through.
+    # Non-greedy so the reported match is the path, not everything up to the last one on the
+    # line. The lookahead keeps Repository and Reposit from matching.
+    @{ Name = 'Local repo path'; Severity = 'Fail'; Regex = '(?i)[A-Z]:\\[^\r\n"]*?\\Repos(?![A-Za-z0-9])' }
     @{ Name = 'UNC share path'; Severity = 'Warn'; Regex = '\\\\[A-Za-z0-9._-]+\\[A-Za-z0-9$._-]+' }
     @{ Name = 'Email address'; Severity = 'Warn'; Regex = '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' }
 )
