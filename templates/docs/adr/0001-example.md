@@ -2,6 +2,8 @@
 
 - **Status:** Accepted
 - **Date:** 2026-01-01
+- **Cost to reverse:** Costly — one backwards-compatible migration and a backfill of the folded
+  totals; no ledger rows change and no published contract moves
 
 <!-- SEEDED ONCE. Copy this file for a real decision, then delete it and its index row.
      It is written out in full rather than left as headings, because an empty template
@@ -23,9 +25,12 @@ it is the column most often left out.
 
 | Option | Upside | Downside | Cost to reverse |
 |---|---|---|---|
-| Do nothing | No work; no new failure modes | The contention gets worse on its current curve | None |
-| Option B | ... | ... | One migration, backwards-compatible |
-| Option C | ... | ... | Total — the storage shape changes |
+| Do nothing | No work; no new failure modes | The contention gets worse on its current curve | Reversible — none |
+| Option B *(chosen)* | ... | ... | Costly — one backwards-compatible migration and a backfill |
+| Option C | ... | ... | One-way — the storage shape changes and history is rewritten under it |
+
+**The chosen row's rating is the one in the header.** If the two disagree, the record is wrong in
+one of them and a reader cannot tell which.
 
 ## Decision
 
@@ -45,3 +50,7 @@ anyway, without the warning.
 - Reads of the running total now go through the fold, which is eventually consistent by up to
   <N> seconds. Anything requiring an exact instantaneous total must say so explicitly.
 - The fold job is now on the critical path for month-end and needs monitoring.
+
+<!-- If this record were rated One-way, the escape belongs here: what would have to be built to
+     get out of it, and roughly what that costs. Not a plan — an inheritance, so the next reader
+     does not have to discover for themselves that there isn't one. -->

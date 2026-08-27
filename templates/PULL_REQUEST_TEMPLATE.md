@@ -56,6 +56,12 @@ Otherwise:
 
 ## Blast radius
 
+**Cost to reverse:** <!-- Reversible | Costly | One-way — and what makes it that. -->
+
+<!-- Rate the shipped state, not the branch: a clean revert today is a backfill the moment this
+     reaches production. Anything above Reversible needs an ADR — link it here.
+     Scale: standards/05-decision-records.md. -->
+
 <!-- What else touches this table, contract or queue. How this is rolled back if it is wrong,
      and when you would find out. "Revert the PR" is only true if there is no migration. -->
 
