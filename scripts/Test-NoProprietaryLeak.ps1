@@ -141,7 +141,10 @@ $patterns = @(
     @{ Name = 'Connection string'; Severity = 'Fail'; Regex = '(?i)\b(Data Source|Initial Catalog|AccountKey|Server\s*=\s*tcp:)' }
     @{ Name = 'Bearer token'; Severity = 'Fail'; Regex = '(?i)Authorization:\s*Bearer\s+[A-Za-z0-9\-_\.]{20,}' }
     @{ Name = 'Windows user path'; Severity = 'Fail'; Regex = '(?i)[A-Z]:\\Users\\[A-Za-z0-9._-]+' }
-    @{ Name = 'Local repo path'; Severity = 'Fail'; Regex = '(?i)[A-Z]:\\[^\r\n"'']*\\Repos\\' }
+    # The class excludes " but NOT ' - a Windows profile folder may legitimately contain an
+    # apostrophe, and excluding it stops the match dead before it can reach \Repos\. Non-greedy
+    # so the reported match is the path itself, not everything up to the last \Repos\ on the line.
+    @{ Name = 'Local repo path'; Severity = 'Fail'; Regex = '(?i)[A-Z]:\\[^\r\n"]*?\\Repos\\' }
     @{ Name = 'UNC share path'; Severity = 'Warn'; Regex = '\\\\[A-Za-z0-9._-]+\\[A-Za-z0-9$._-]+' }
     @{ Name = 'Email address'; Severity = 'Warn'; Regex = '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' }
 )
