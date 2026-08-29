@@ -11,7 +11,7 @@ copy falls behind upstream.
 Drift you can see in a PR is a decision. Drift you cannot see is just entropy.
 
 > **Status: complete, unreleased.** Every file described below exists (`standards/VERSION`
-> 0.3.0). The sync script is tested end-to-end against a fixture upstream — added, changed and
+> 0.4.0). The sync script is tested end-to-end against a fixture upstream — added, changed and
 > deleted files, idempotent re-run, `-WhatIf`, and a verified refusal to write outside
 > `standards/` — but has not yet run against a live consuming repository.
 
@@ -54,17 +54,18 @@ Drift you can see in a PR is a decision. Drift you cannot see is just entropy.
 **New repo** — generate from this template on GitHub, then delete what you do not need.
 `templates/` is yours to edit from that moment; `standards/` is not.
 
-**Existing repo** — copy `standards/` in and commit. Once the sync workflow exists, add
-`.github/workflows/standards-sync.yml` too and the next scheduled run keeps it current; until
-then, re-copy when `standards/VERSION` changes.
+**Existing repo** — copy `standards/` in and commit, then add
+`.github/workflows/standards-sync.yml` too and the next scheduled run keeps it current. Without
+that workflow, re-copy by hand when `standards/VERSION` changes.
 
 Either way `standards/` is **read-only downstream**. Every file under it says so in its own
 header, because a rule stated only in a README is a rule nobody reads. Disagree with a
 standard? Change it here, upstream, and let the PR carry it everywhere.
 
-### How the sync will behave
+### How the sync behaves
 
-*Not built yet — this is the intended design, not current behaviour.*
+*The workflow exists and runs on its weekly cron. It has not yet run against a consuming
+repository — every run so far has been in this repository, where there is nothing to sync.*
 
 Weekly cron plus `workflow_dispatch`. It fetches this repo, diffs `standards/**` against the
 local copy, and opens or updates a PR titled `Standards sync: <from> → <to>` using
