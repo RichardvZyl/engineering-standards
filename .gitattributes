@@ -1,4 +1,4 @@
-﻿# Vendored from RichardvZyl/engineering-standards. Read-only downstream.
+# Vendored from RichardvZyl/engineering-standards. Read-only downstream.
 
 # Let git decide what is text, then normalise it in the repository.
 * text=auto
