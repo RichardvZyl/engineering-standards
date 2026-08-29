@@ -13,6 +13,25 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+### Added — `standards/` (v0.5.0)
+
+**Closing something is not done until every document that assumed the old state moves with it.**
+Ownership was already defined; nothing said what maintaining it costs at the moment state
+changes.
+
+- `standards/VERSION` — `0.4.0` → `0.5.0`. Minor: a rule is added. Nothing written under `0.4.0`
+  becomes invalid, but a repository that closed items without sweeping now has debt it can see.
+- `standards/08-keeping-documents-current.md` — new standard. The rule, the surfaces a closure
+  obliges, generated views as views rather than sources, the stale-reference sweep keyed on the
+  identifier [`04`](./standards/04-documentation-layout.md) makes permanent, the commit
+  convention that records the sync, and the `TODO(...)` debt marker for a surface that genuinely
+  cannot be updated in the same commit.
+
+  The marker is deliberately narrow. It covers a generator that will not run, not a decision to
+  finish the sync later — that deferral is the failure the standard exists to prevent.
+
+- `README.md` — the standards table gains its row.
+
 ### Added — `standards/` (v0.4.0)
 
 **Cost to reverse is a first-class field on every ADR**, not only the admission test and a column

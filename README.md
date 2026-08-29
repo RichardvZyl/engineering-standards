@@ -38,6 +38,7 @@ Drift you can see in a PR is a decision. Drift you cannot see is just entropy.
 | `05-decision-records.md` | ADR format; required by cost to reverse, not by importance |
 | `06-review-standards.md` | The two review axes, kept deliberately unmerged |
 | `07-repo-layout.md` | Directory shape, naming, and the conventions/context division |
+| `08-keeping-documents-current.md` | What closing something obliges: the surfaces to sync, the stale-reference sweep, the debt marker |
 
 ### The scripts
 
