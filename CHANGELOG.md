@@ -13,6 +13,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.5.0] — 2026-08-29
+
 ### Added — `standards/` (v0.5.0)
 
 **Closing something is not done until every document that assumed the old state moves with it.**
@@ -31,6 +35,8 @@ changes.
   finish the sync later — that deferral is the failure the standard exists to prevent.
 
 - `README.md` — the standards table gains its row.
+
+## [0.4.0] — 2026-08-27
 
 ### Added — `standards/` (v0.4.0)
 
@@ -65,6 +71,8 @@ in the options table.
 versions — but a repository adopting these standards may arrive with ADRs of its own. Backfill a
 rating only where the answer is still knowable from the record. Where it is not, leave the field
 absent: a missing rating reads as unknown, an invented one reads as fact.
+
+## [0.3.0] — 2026-08-13
 
 ### Added — `standards/` (v0.3.0, the initial set)
 

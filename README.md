@@ -10,10 +10,10 @@ copy falls behind upstream.
 
 Drift you can see in a PR is a decision. Drift you cannot see is just entropy.
 
-> **Status: complete, unreleased.** Every file described below exists (`standards/VERSION`
-> 0.4.0). The sync script is tested end-to-end against a fixture upstream — added, changed and
-> deleted files, idempotent re-run, `-WhatIf`, and a verified refusal to write outside
-> `standards/` — but has not yet run against a live consuming repository.
+> **Status: released at `v0.5.0`.** Every file described below exists. The sync script is tested
+> end-to-end against a fixture upstream — added, changed and deleted files, idempotent re-run,
+> `-WhatIf`, and a verified refusal to write outside `standards/` — but has not yet run against a
+> live consuming repository, and no repository has consumed the standards set yet.
 
 ---
 
