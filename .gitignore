@@ -33,7 +33,9 @@ coverage*.info
 BenchmarkDotNet.Artifacts/
 
 ## Agent working state — never committed. The resume checkpoint is local state only.
-.claude/
+## Exception: .claude/settings.json is shared, non-personal repo config (commit attribution).
+.claude/*
+!.claude/settings.json
 .agents/
 
 ## IDE
@@ -55,3 +57,7 @@ node_modules/
 [Tt]humbs.db
 [Dd]esktop.ini
 .DS_Store
+# Perseus generated output
+.hermes.md
+.perseus/cache/
+live-context.md

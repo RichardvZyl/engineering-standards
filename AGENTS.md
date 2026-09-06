@@ -1,4 +1,4 @@
-﻿# AGENTS.md — working in this repository
+# AGENTS.md — working in this repository
 
 This file governs work on **`engineering-standards` itself**. It is not the file a consuming
 repo gets; that one is [`templates/AGENTS.md.template`](./templates/AGENTS.md.template).
@@ -89,3 +89,8 @@ they may contain placeholders and instructions to the reader. Mark placeholders 
 3. `CHANGELOG.md` entry added.
 4. Every relative link resolves.
 5. Re-read the diff asking only: *would this sentence be wrong in someone else's repo?*
+
+## Memory and workspace context (Perseus)
+
+- **Vault** (shared across clients on this machine): `perseus_vault_*` MCP tools. Session start: `perseus_vault_context`. Durable facts: `perseus_vault_remember`. No secrets.
+- **Context Engine** (this repo only): `perseus` MCP tools and `.perseus/context.md`. Do not reuse another project's briefing.
