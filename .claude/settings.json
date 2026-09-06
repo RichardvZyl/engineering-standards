@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/richa/.local/bin/perseus.exe render .perseus/context.md"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/richa/.local/bin/perseus.exe render .perseus/context.md"
+          }
+        ]
+      }
+    ]
+  }
+}
