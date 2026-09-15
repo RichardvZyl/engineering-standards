@@ -1,4 +1,7 @@
-﻿# Vendored from RichardvZyl/engineering-standards. Read-only downstream.
+﻿# Seeded from RichardvZyl/engineering-standards, then owned by this repo.
+# NOT vendored: Sync-Standards.ps1 writes only inside standards/ (guarantee 1), and
+# Test-StandardsIntegrity.ps1 only enforces the read-only header on files under standards/.
+# Edits here are safe and will not be overwritten by a standards sync.
 
 ## Private context — never committed, in any repo, ever.
 ## Test-NoProprietaryLeak.ps1 fails the build if one of these is tracked anyway.

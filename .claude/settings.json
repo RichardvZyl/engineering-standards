@@ -1,4 +1,7 @@
 {
+  "attribution": {
+    "sessionUrl": false
+  },
   "hooks": {
     "SessionStart": [
       {
@@ -6,7 +9,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "C:/Users/richa/.local/bin/perseus.exe render .perseus/context.md"
+            "command": "perseus render .perseus/context.md"
           }
         ]
       }
@@ -17,7 +20,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "C:/Users/richa/.local/bin/perseus.exe render .perseus/context.md"
+            "command": "perseus render .perseus/context.md"
           }
         ]
       }
