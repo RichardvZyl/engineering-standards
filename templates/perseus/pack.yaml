@@ -1,6 +1,6 @@
-# SEEDED ONCE from engineering-standards. Expected `.perseus/pack.yaml`
-# scaffolding for the Perseus Context Engine dependency. Copy to the
-# repository root as `.perseus/pack.yaml`, then edit.
+# SEEDED ONCE from engineering-standards. Optional seed. Delete if unused.
+# Not required by a standards sync. Copy to .perseus/pack.yaml only if the
+# host has Perseus, then edit.
 version: 1
 name: <PROJECT>
 profile: generic

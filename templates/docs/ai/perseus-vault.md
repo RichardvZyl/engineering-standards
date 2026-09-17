@@ -1,17 +1,17 @@
-# Dependency: Perseus / Vault
+# Optional: Perseus / Vault
 
-<!-- SEEDED ONCE from engineering-standards. This is required wiring for agent
-     hosts under this kit, not a suggestion. Edit the stubs; do not delete the
-     dependency. MCP install steps do not belong in standards/. -->
+<!-- SEEDED ONCE from engineering-standards. Suggestion only. Delete this file
+     if unused. Nothing in standards/ requires Perseus or Vault. -->
 
-**Status:** dependency for agent hosts. Not optional. Not vendored into
-`standards/` — those files stay engineering conventions. Seed this wiring
-once from `templates/`.
+**Status:** optional / watch-list. Recommended wiring only when the host has
+the stack. Not a dependency. Not vendored.
 
-Agents working under these standards require **Perseus Context Engine** and
-**Perseus Vault**.
+**Conventions stay mandatory. Perseus is not.** `standards/` does not name
+Perseus, Vault, or any other memory host. A consuming repository that never
+creates `.perseus/` is still following the standards. A standards sync will
+not add it, and must not be read as requiring it.
 
-| Piece | What it is | What the host must expose |
+| Piece | What it is | What the host exposes, if present |
 |---|---|---|
 | Context Engine | Repo-local briefing | MCP `perseus` and `.perseus/` in the repository |
 | Vault | Shared memory across repositories on this machine | MCP `perseus_vault_*` |
@@ -21,24 +21,27 @@ Agents working under these standards require **Perseus Context Engine** and
 - **Context Engine:** `.perseus/context.md` is this repository's briefing.
   Do not reuse another project's briefing.
 
-## Scaffolding
+## When to seed it
 
-Copy `templates/perseus/` to `.perseus/` at the repository root:
+Only if the agent host actually exposes Perseus / Vault tools. Copy
+`templates/perseus/` to `.perseus/` at the repository root, then edit.
+Ignore generated output (`.perseus/cache/`, `live-context.md`).
 
-- `context.md` — repo-local briefing
-- `pack.yaml` — render pack; synthesis probes start disabled
+That copy is an **optional seed**, not required scaffolding for every
+consumer. Delete the stubs if the host does not have the stack.
 
-That copy is expected scaffolding, not a toy. Fill the placeholders. Ignore
-generated output (`.perseus/cache/`, `live-context.md`).
+## When not to
 
-`standards/` does not install MCP servers and a standards sync will not create
-`.perseus/`. The host still has to expose the tools. The dependency is the
-wiring, not a new numbered standard.
+- The host has no Perseus tools. Do not add `.perseus/` as decoration.
+- You were about to treat `.perseus/` as part of the synced set. It is not.
+  `Sync-Standards.ps1` writes only inside `standards/`.
 
-## What this is not
+## Dual source of truth
 
-APM, agentrc, and AGT remain **optional** watch-list notes. They are not this
-dependency. See `docs/ai/optional-*.md`.
+Do not let a generated briefing overwrite `AGENTS.md` or `standards/`
+pointers. Perseus renders a snapshot; the authored files remain the source
+of truth. Same cutover rule as APM and agentrc: if something else becomes
+the writer for those files, that is a deliberate migration, not an add-on.
 
-A Perseus render is a snapshot. It does not overwrite `AGENTS.md` or
-`standards/` pointers.
+Same posture as the other optional notes — suggestion, not a vendored
+mandate.

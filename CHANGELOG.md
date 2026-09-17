@@ -15,15 +15,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ### Added — templates/
 
-**Perseus/Vault is an agent-host dependency of this kit.** APM, agentrc, and
-AGT remain optional watch-list notes. `standards/` is unchanged: conventions
-stay in 00–08; MCP install steps stay out of the synced set.
+Suggestion-only notes for optional agent tooling — APM, agentrc, AGT, and
+Perseus/Vault. Seeded once, never synced. `standards/` is unchanged and does
+not require any of them.
 
-- `templates/AGENTS.md.template` — Dependency section: Perseus Context Engine
-  + Perseus Vault required for agents (MCP `perseus` + `perseus_vault_*`,
-  `.perseus/` in the repo).
-- `templates/perseus/` — expected `context.md` / `pack.yaml` scaffolding.
-- `templates/docs/ai/perseus-vault.md` — the dependency note consumers seed.
+Perseus/Vault is **optional for consumers**. This kit repo may still use
+Perseus as its own project tooling; that is project context, not a mandate.
+
+- `templates/AGENTS.md.template` — Optional: Perseus / Vault (delete if the
+  host does not have the stack). Tiny optional-tooling pointer for APM,
+  agentrc, AGT as well.
+- `templates/perseus/` — optional `context.md` / `pack.yaml` seed.
+- `templates/docs/ai/perseus-vault.md` — recommended wiring only when present.
 - `templates/docs/ai/optional-agent-package-manager.md` — APM as watch-list or
   third-party side channel; never a second writer on a live canonical tree.
 - `templates/docs/ai/optional-agentrc.md` — readiness scores may mis-score

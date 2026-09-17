@@ -1,7 +1,7 @@
 @perseus
 
-<!-- SEEDED ONCE from engineering-standards. Expected `.perseus/context.md`
-     scaffolding for the Perseus Context Engine dependency.
+<!-- SEEDED ONCE from engineering-standards. Optional seed. Delete this file
+     if the host does not run Perseus. Not required by standards/.
      REPLACE: keep the @perseus / @prompt / @query directives; fill the rest.
      Do not restate standards/ here. -->
 
