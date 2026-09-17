@@ -92,5 +92,12 @@ they may contain placeholders and instructions to the reader. Mark placeholders 
 
 ## Memory and workspace context (Perseus)
 
+**Dependency.** Agents working in this repository — and in consuming repos
+seeded from this kit — require Perseus Context Engine and Perseus Vault.
+`standards/` stays engineering conventions and does not carry MCP install
+steps; the host still has to expose MCP `perseus` and `perseus_vault_*`, and
+the repo still has to carry `.perseus/`. Consumers seed that wiring from
+`templates/AGENTS.md.template` and `templates/perseus/`.
+
 - **Vault** (shared across clients on this machine): `perseus_vault_*` MCP tools. Session start: `perseus_vault_context`. Durable facts: `perseus_vault_remember`. No secrets.
 - **Context Engine** (this repo only): `perseus` MCP tools and `.perseus/context.md`. Do not reuse another project's briefing.

@@ -2,7 +2,9 @@
 
 <!-- SEEDED ONCE from engineering-standards. This file is YOURS from the moment it lands.
      It is not synced and will never be overwritten. Delete every section you do not need —
-     an AGENTS.md padded with unanswered placeholders is worse than a short honest one. -->
+     an AGENTS.md padded with unanswered placeholders is worse than a short honest one.
+     Exception: the Perseus / Vault dependency section is required wiring for agents,
+     not a placeholder. -->
 
 <!-- THE DIVISION THAT MATTERS
      This file holds CONTEXT — what is true of this project only.
@@ -41,6 +43,26 @@ Which document governs which directory. A reader working in a path opens the mat
 
 New vocabulary goes in the domain doc, not in this file. Where a term means different things in
 different places, resolve it in the domain doc and ADR the ruling if it is hard to reverse.
+
+## Dependency — Perseus / Vault
+
+**Required wiring for agents working under these standards.** Perseus Context
+Engine and Perseus Vault are a dependency of this kit for agent hosts, not a
+suggestion. `standards/` stays engineering conventions and does not install
+MCP servers; the host still has to expose the tools. Seed `.perseus/` from
+`templates/perseus/` (`context.md`, `pack.yaml`) — expected scaffolding, not
+optional. Longer note: `docs/ai/perseus-vault.md`.
+
+- **Vault** (shared across clients on this machine): `perseus_vault_*` MCP tools. Session start: `perseus_vault_context`. Durable facts: `perseus_vault_remember`. No secrets.
+- **Context Engine** (this repo only): `perseus` MCP tools and `.perseus/context.md`. Do not reuse another project's briefing.
+
+## Optional tooling
+
+<!-- DELETE THIS SECTION if unused. Watch-list only — APM, agentrc, AGT.
+     Seeded notes: `docs/ai/optional-*.md`. Not the Perseus dependency above. -->
+
+Do not run optional installers or generators as a second writer against a live
+canonical skill or config tree. Adopting one as primary is a deliberate cutover.
 
 ## Stack
 

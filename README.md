@@ -22,7 +22,7 @@ Drift you can see in a PR is a decision. Drift you cannot see is just entropy.
 | Path | Synced downstream? | Purpose |
 |---|---|---|
 | `standards/` | **Yes** — the synced set | The conventions themselves. Read-only in consuming repos. |
-| `templates/` | No — seeded once | Starting points a repo edits and owns: `AGENTS.md`, ADR scaffolding, domain-doc template, PR template. |
+| `templates/` | No — seeded once | Starting points a repo edits and owns: `AGENTS.md`, ADR scaffolding, domain-doc template, PR template. Perseus/Vault is **agent-host dependency** scaffolding (`templates/perseus/`, `docs/ai/perseus-vault.md`). APM, agentrc, and AGT are optional watch-list notes under `templates/docs/ai/`. |
 | `scripts/` | No | `Sync-Standards.ps1` · `Test-NoProprietaryLeak.ps1` · `Test-StandardsIntegrity.ps1` |
 | `.github/workflows/` | `standards-sync.yml` only | Sync opens the drift PR downstream; verify runs here. |
 
