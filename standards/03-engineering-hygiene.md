@@ -33,6 +33,18 @@ mechanical checks are automated.
   removed once the feature is permanent; a flag nobody will ever flip is dead code with extra
   branching.
 - **Force-pushing a shared branch, and history rewriting on anything published, are prohibited.**
+- **Delete a branch only once it carries zero unique commits.** Confirm with
+  `git merge-base --is-ancestor <branch> <target>` before removing it; use
+  `git branch -d`, never `-D`, so git refuses if work would be lost. Record the SHA of
+  anything deleted so it remains recoverable from the reflog.
+- **Sequence PRs by containment.** Before opening PRs, determine which branches are
+  ancestors of others (`git merge-base --is-ancestor` across every pair). Open them
+  oldest-first along the containment DAG. A PR merged out of order leaves a history that
+  cannot be cleanly reverted — the merge record prevents re-merging silently once the
+  branch is reverted.
+- **Resolve every stash before the session ends.** A parked stash is uncommitted work.
+  Inspect first with `git stash show --include-untracked --stat`; a stash holding only
+  git-ignored local files can be popped and dropped.
 
 ## Secrets and configuration
 

@@ -61,6 +61,9 @@ three", the answer is wrong.
   without it will be edited downstream by someone who had no way of knowing better.
 - A change to `standards/**` requires a `standards/VERSION` bump and a `CHANGELOG.md` entry.
   The sync PR title is built from `VERSION`; without the bump, downstream sees nothing.
+- Each new `standards/` version gets its own dated `CHANGELOG.md` block. **Never fold a rule
+  into an earlier version's block**, even pre-release. A rule buried under another version's
+  entry is a rule nobody finds when they need to know when it arrived.
 - Prefer amending an existing standard over adding a file. Eight files that are read beat
   fifteen that are skimmed.
 - Write rules as assertions in the present tense — "Money is `decimal`" — not as advice.
@@ -79,6 +82,10 @@ they may contain placeholders and instructions to the reader. Mark placeholders 
   consuming repo's `AGENTS.md`. There is no `CONTEXT.md` in this world.
 - **`pwsh`, never `powershell.exe`.** Scripts here declare `#Requires -Version 7.0` and use
   APIs Windows PowerShell 5.1 does not have. Some tooling defaults to 5.1 — be explicit.
+- **Agent working state lives in `.agents/`.** `continue.md`, `worktrees/`, and `temp/` go
+  in `<repo>/.agents/`, not `.claude/`. The `.claude/` directory holds only what the vendor
+  harness requires (`settings.local.json`, per-repo `commands/`, `agents/`). Both are
+  git-ignored at every repo root. (ADR 0015 — `reusable-ai-tools`.)
 - **Record known contradictions between planning documents** rather than silently resolving
   one in favour of the other. The contradiction is information.
 
@@ -86,7 +93,7 @@ they may contain placeholders and instructions to the reader. Mark placeholders 
 
 1. `pwsh ./scripts/Test-NoProprietaryLeak.ps1` — clean.
 2. `standards/VERSION` bumped if `standards/**` changed.
-3. `CHANGELOG.md` entry added.
+3. `CHANGELOG.md` entry added in its own version block, not folded into a prior one.
 4. Every relative link resolves.
 5. Re-read the diff asking only: *would this sentence be wrong in someone else's repo?*
 
