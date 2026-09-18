@@ -13,7 +13,27 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
-Nothing yet.
+### Added — templates/
+
+Suggestion-only notes for optional agent tooling — APM, agentrc, AGT, and
+Perseus/Vault. Seeded once, never synced. `standards/` is unchanged and does
+not require any of them.
+
+Perseus/Vault is **optional for consumers**. This kit repo may still use
+Perseus as its own project tooling; that is project context, not a mandate.
+
+- `templates/AGENTS.md.template` — Optional: Perseus / Vault (delete if the
+  host does not have the stack). Tiny optional-tooling pointer for APM,
+  agentrc, AGT as well.
+- `templates/perseus/` — optional `context.md` / `pack.yaml` seed.
+- `templates/docs/ai/perseus-vault.md` — recommended wiring only when present.
+- `templates/docs/ai/optional-agent-package-manager.md` — APM as watch-list or
+  third-party side channel; never a second writer on a live canonical tree.
+- `templates/docs/ai/optional-agentrc.md` — readiness scores may mis-score
+  junctioned/vendored setups; do not overwrite authored `AGENTS.md`.
+- `templates/docs/ai/optional-runtime-agent-governance.md` — AGT for money,
+  send-on-behalf, destructive tools, fleets; not required for everyday coding
+  agents with host-level review. Pilot one host first.
 
 ## [0.6.0] — 2026-09-17
 
