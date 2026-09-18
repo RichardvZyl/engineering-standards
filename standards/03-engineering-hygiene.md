@@ -45,6 +45,18 @@ mechanical checks are automated.
 - **Resolve every stash before the session ends.** A parked stash is uncommitted work.
   Inspect first with `git stash show --include-untracked --stat`; a stash holding only
   git-ignored local files can be popped and dropped.
+- **An agent session works in its own worktree, never in the primary checkout.** An editor
+  holding `.git/index.lock` blocks every index-writing command in that repository — `add`,
+  `commit`, `checkout` — and an agent reached through a sandbox frequently cannot clear the
+  lock. A worktree carries its own index and HEAD against the same object store, so the
+  collision cannot arise: `git worktree add .agents/worktrees/<branch> -b <branch>
+  origin/<default>`, work there, push, `git worktree remove` once merged. It also keeps a
+  human's in-progress work out of an agent's commit, and lets two agents hold the same
+  repository on different branches at once.
+- **`core.fileMode` is `false`, and the shipped `.gitattributes` is vendored unedited.** A
+  repository read through a second filesystem — a container mount, WSL, a network share —
+  otherwise reports every tracked file as rewritten on line endings and mode bits. That is
+  indistinguishable from real uncommitted work, and it is exactly what `git add -A` commits.
 
 ## Secrets and configuration
 
