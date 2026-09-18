@@ -15,6 +15,44 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 Nothing yet.
 
+## [0.6.0] — 2026-09-17
+
+### Added — `standards/` (v0.6.0)
+
+**Five git discipline rules that the session-sync gap exposed.** The existing rules
+covered what to write into history; these cover how to handle the branches, the
+working tree, and unfinished work around it.
+
+- `standards/VERSION` — `0.5.0` → `0.6.0`. Minor: five rules added. Nothing written
+  under `0.5.0` becomes invalid.
+- `standards/03-engineering-hygiene.md` — five additions to the **Git** section:
+
+  **Branch deletion safety.** A branch is only safe to delete once `git merge-base
+  --is-ancestor` confirms it carries zero unique commits. Use `git branch -d`, never
+  `-D` (let git refuse rather than force-lose work). Record the SHA of anything deleted
+  so it remains recoverable from the reflog.
+
+  **PR containment sequencing.** Work out the containment DAG across every branch pair
+  (`git merge-base --is-ancestor`) before opening PRs. Open them oldest-first along it.
+  A PR merged out of order cannot be cleanly reverted — the merge record prevents
+  re-merging silently once the branch is reverted.
+
+  **Stash discipline.** Resolve every stash before the session ends — pop it, or commit
+  it. Inspect first with `git stash show --include-untracked --stat`; a stash holding
+  only git-ignored local files can be popped and dropped. A parked stash is uncommitted
+  work that the next session will not know about.
+
+  **Agent sessions work in a worktree.** An editor holding `.git/index.lock` blocks
+  every index-writing command in that repository, and an agent reached through a sandbox
+  frequently cannot clear the lock. A worktree under `.agents/worktrees/` has its own
+  index and HEAD against the same object store, so the collision cannot arise — and a
+  human's in-progress work cannot be swept into an agent's commit.
+
+  **`core.fileMode` off, `.gitattributes` vendored unedited.** A repository read through
+  a second filesystem — container mount, WSL, network share — otherwise reports every
+  tracked file as rewritten on line endings and mode bits, which is indistinguishable
+  from real uncommitted work and is exactly what `git add -A` commits.
+
 ## [0.5.0] — 2026-08-29
 
 ### Added — `standards/` (v0.5.0)
