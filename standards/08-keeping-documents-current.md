@@ -57,6 +57,32 @@ Provisional language near a hit — "assumed", "provisional", "for now", "pendin
 chasing even when the identifier itself reads correctly. It is how a superseded default survives
 a sweep that only matched on identifiers.
 
+## Write what will still be true
+
+The cheapest way to keep a document current is to not write the sentence that ages. A count, a
+roster or a restated version embedded in prose is a claim with an expiry date: correct the day it
+is written, wrong the first ordinary time something is added. Nothing fails when it goes wrong —
+no build breaks, no test reddens — so it rots in place while still reading authoritatively, and a
+reader has no way to tell a current figure from a stale one.
+
+**Prefer the shape to the census.** Three forms carry the same meaning without the expiry:
+
+| Instead of | Write |
+|---|---|
+| a count — "the twelve modules", "you will not remember all 26" | the shape — "every module", "you will not remember them all" |
+| a roster that has to be exhaustive to be correct | the rule that decides membership, and let the reader derive it |
+| a version, path or identifier restated in a second place | a pointer to the one place that holds it |
+
+The test, applied to a sentence before it is committed: **would adding one ordinary new thing make
+this false?** A new module, a new record, a new environment. If it would, the sentence is a
+maintenance obligation nobody scheduled, and the sweep above is what pays for it later.
+
+Two kinds of number are correct and stay. A **dated record** — a changelog entry, a decision
+record, a report — where the figure is history and freezing it is the point. And a **threshold
+that drives behaviour** — a retry limit, a review quorum, a size budget — where the number *is* the
+rule rather than a description of the world. The distinction is whether the number is a measurement
+or a decision.
+
 ## Commit convention
 
 One closure is one commit, and the message names what closed and what was synced with it:

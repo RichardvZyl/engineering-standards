@@ -92,3 +92,39 @@ owning document, permanent, never renumbered, and cited in commit messages.
 - Log personal data, secrets, or anything crossing a tenant boundary.
 - Write a query against tenant-scoped data without a tenant predicate.
 - Edit anything under `standards/`.
+## Durable references (standards 09) — two hard rules
+
+**Never write an absolute path.** Not in docs, ADRs, `AGENTS.md`, config, scripts, commit messages or
+durable memory. Use repo-relative paths, or a variable/environment indirection resolved at use time.
+If a path must be concrete at runtime, it is an *input*, not a literal. Examples obey this too,
+because examples get copied.
+
+**Never write down a number that is likely to change.** Record the check that regenerates it, not the
+value. File/object/commit counts, byte sizes, hashes, page and table counts, timings — all volatile.
+Ports, schema versions and policy limits are structural and may be stated. Measurements belong in a
+dated run log; durable text cites the log instead of inlining the figure.
+
+Both rules exist because written-down facts outlive the conditions that made them true, and a stale
+fact is worse than a missing one — it gets believed. See `standards/09-durable-references.md` for the
+full rationale and the review checklist.
+
+## Perseus: two different components — do not conflate them
+
+Perseus is **two** things. Confusing them wastes time, and has already done so.
+
+**Perseus Vault — this is memory.** A durable entity store (SQLite, full-text index, embeddings),
+spoken to as an **MCP stdio server**. Each MCP client launches **its own** vault process, and they all
+point at **one shared database** — that is the designed model, not a misconfiguration, so several
+concurrent vault processes are expected and correct. Reach for the vault when you need to **remember
+something across sessions, or recall what was decided before**. Semantic recall depends on the binary
+being built with embedding support; if recall reports unavailable, suspect the binary before the data.
+
+**Perseus Context Engine — this is a renderer.** It resolves a context template into a rendered
+context file, expanding directives (memory lookups, shell queries, checkpoints, task boards) into
+text. Its state lives in its own per-user directory, **separate from the vault's database**, and it is
+a **different binary**. Reach for the Context Engine when you need a **current snapshot of a
+workspace** assembled for a prompt.
+
+**In one line:** the **vault stores** what should outlast the session; the **Context Engine composes**
+what the next prompt should see. A rendered context file is a snapshot, not a source of truth —
+verify anything load-bearing against live tools.
