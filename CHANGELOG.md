@@ -1,4 +1,4 @@
-﻿# Changelog
+# Changelog
 
 Notable changes to this repository. Changes under `standards/` are what downstream repos
 actually receive, so they are listed first in each release and carry the `standards/VERSION`
@@ -13,7 +13,75 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
-Nothing yet.
+> **Minor when cut — `standards/VERSION` `0.6.0` → `0.7.0`.** Rules are added; nothing written
+> under `0.6.0` becomes invalid.
+
+### Added — `standards/`
+
+**Seven standards earned from one repository migration.** Each was written from a wrong answer that
+looked right at the time, which is why every entry below carries the reasoning and not only the
+title — the reasoning is the part that makes a rule stick.
+
+- `standards/08-keeping-documents-current.md` — **"write what will still be true"**, the preventive
+  half of the existing rule. The old rule says a closure must sync every surface that assumed the old
+  state; this says do not write the sentence that will need the sync. Counts, exhaustive rosters and
+  versions restated in a second place are claims with expiry dates, and they fail silently — no build
+  breaks when they drift, so they rot while still reading authoritatively and a reader cannot tell a
+  current figure from a stale one. Carries the substitution table (count → shape, roster → the rule
+  that decides membership, restated value → pointer), the one-question test — *would adding one
+  ordinary new thing make this false?* — and the two numbers that are correct and stay: a figure in a
+  dated record, where freezing it is the point, and a threshold that drives behaviour, where the
+  number *is* the rule.
+
+- `standards/09-durable-references.md` — **no absolute paths, no volatile numbers.** Both rules exist
+  because a written-down fact outlives the conditions that made it true, and a stale fact is worse
+  than an absent one because it gets believed. An absolute path is silently wrong after any relocation
+  rather than loudly broken, so it survives review and fails later. Scoped to every artefact a human
+  or agent may read as authoritative, durable agent memory included; run logs are deliberately out of
+  scope, because freezing one moment is their whole purpose.
+
+- `standards/10-repository-and-worktree-layout.md` — **the base checkout is named `root`, worktrees
+  are its siblings, and the base is never worked on directly.** The base exists to track and
+  synchronise with the remote; work happens beside it. Settles, once, which directory is safe to
+  commit in.
+
+- `standards/11-evidence-and-verification.md` — **what counts as proof.** Verify from the correct
+  harness: a check run from the wrong place fails for reasons unrelated to the thing being checked,
+  which once reported an entire set of good backups as broken. Look for a rename before concluding a
+  file is absent. Never infer from an adjacent line. Confirm a dry run's destination. A snapshot is
+  never the source of truth. And the one that cost the most: **a successful bind is not proof of
+  reachability** — a process can hold a socket that nothing can actually reach.
+
+- `standards/12-data-handling-and-boundaries.md` — **databases, boundaries and secrets.** Never copy
+  an open database; never put one across an interoperability boundary. Line-ending policy belongs in a
+  committed attributes file, not a per-machine client setting that travels with the person instead of
+  the repository. **Cleanliness can be a property of the platform you asked** — the same repository
+  reports entirely different modified files depending on which side of a boundary you read it from,
+  and that reading describes the asker rather than the repository. Ownership over exemption; secrets
+  do not live in sandbox roots.
+
+- `standards/13-concurrent-agents-and-working-memory.md` — **one writer per file, whole-file
+  writes.** Concurrent agents sharing a working-memory file corrupt it by interleaving partial
+  writes; the fix is ownership and atomicity, not locking discipline nobody follows. Carries the
+  detour rule and the reminder that a snapshot is not working memory.
+
+- `standards/14-agent-working-directories-and-file-placement.md` — **where an agent puts things.**
+  Provider working directories are links into one `agents/` folder, which makes the whole set
+  enumerable, movable and backup-able instead of scattered through a user profile. Files worth
+  keeping go in the active worktree's `documents/` — create a worktree if none exists — and never in
+  a base checkout. Scratch goes to a `.temp/` subfolder and is deleted when the task finishes,
+  because "later" does not arrive. Every location is expressed relative to a single configured
+  development-root value, so a relocation changes one value and nothing else: that is how a standard
+  about locations complies with 09 forbidding absolute paths, and the document says so rather than
+  leaving a reader to spot the tension.
+
+- `standards/15-workflow-and-plan-pair.md` — **recurring work produces a workflow *and* a plan, and
+  the dependency runs one way.** The plan may reference the workflow; the workflow must never
+  reference the plan. The workflow is durable and the plan is disposable, so a workflow pointing at a
+  specific plan rots the moment that plan is completed or deleted — losing reusability, the only
+  property it had. This is the documentation form of the snapshot rule already in this set: the thing
+  that must survive cannot depend on the thing that is meant to go stale. Producing only a plan is
+  the failure mode, because the knowledge then dies with the task.
 
 ## [0.6.0] — 2026-09-17
 
