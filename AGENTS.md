@@ -99,5 +99,10 @@ they may contain placeholders and instructions to the reader. Mark placeholders 
 
 ## Memory and workspace context (Perseus)
 
+This block is **this kit repository's** project tooling. It is not a
+convention and not a kit-wide dependency. Consuming repos treat Perseus/Vault
+as optional — seed from `templates/` only if the host has the stack.
+`standards/` does not require it.
+
 - **Vault** (shared across clients on this machine): `perseus_vault_*` MCP tools. Session start: `perseus_vault_context`. Durable facts: `perseus_vault_remember`. No secrets.
 - **Context Engine** (this repo only): `perseus` MCP tools and `.perseus/context.md`. Do not reuse another project's briefing.

@@ -42,6 +42,23 @@ Which document governs which directory. A reader working in a path opens the mat
 New vocabulary goes in the domain doc, not in this file. Where a term means different things in
 different places, resolve it in the domain doc and ADR the ruling if it is hard to reverse.
 
+## Optional tooling
+
+<!-- DELETE THIS SECTION if unused. Suggestions, not conventions.
+     Seeded notes: `docs/ai/optional-*.md` and `docs/ai/perseus-vault.md`. -->
+
+Do not run optional installers or generators as a second writer against a live
+canonical skill or config tree. Adopting one as primary is a deliberate cutover.
+
+### Optional: Perseus / Vault
+
+<!-- DELETE if the host does not run Perseus. Recommended wiring only when the
+     stack is present. Not a kit-wide dependency. Not required by `standards/`.
+     Optional seed: copy `templates/perseus/` to `.perseus/` if you use it. -->
+
+- **Vault** (shared across clients on this machine): `perseus_vault_*` MCP tools. Session start: `perseus_vault_context`. Durable facts: `perseus_vault_remember`. No secrets.
+- **Context Engine** (this repo only): `perseus` MCP tools and `.perseus/context.md`. Do not reuse another project's briefing.
+
 ## Stack
 
 <!-- REPLACE: only what an assistant would otherwise guess wrong. Versions matter. -->
