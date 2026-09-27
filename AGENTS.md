@@ -99,6 +99,12 @@ they may contain placeholders and instructions to the reader. Mark placeholders 
 
 ## Memory and workspace context (Perseus)
 
+This block is **this kit repository's** project tooling. It is not a
+convention and not a kit-wide dependency. Consuming repos treat Perseus/Vault
+as optional — seed from `templates/` only if the host has the stack.
+`standards/` does not require it.
+
+
 ### Shared Vault (all repos on this machine)
 - Store: resolved at use time from `PERSEUS_VAULT_DB_PATH`, or the per-user default under `~/.perseus-vault/data/`, via the **`perseus-vault`** MCP (`perseus_vault_*` tools). The concrete path is an *input*, never a literal in a document — see standards 09.
 - **Read when:** session start (`perseus_vault_context`); before re-deciding something that may already be settled; looking up cross-repo conventions/facts.
