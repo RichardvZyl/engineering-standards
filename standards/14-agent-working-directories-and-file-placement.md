@@ -60,18 +60,29 @@ entry and one link, not discovering a new convention.
 
 ## 14.2 Files worth keeping go in the active worktree's `documents` folder
 
-**Rule.** A file likely to be kept — a decision record, a plan, a note meant to be read again — is
-created and maintained under `documents/` **inside the active worktree**.
+**Rule.** A keepable file that no other standard owns — an agent note, a session brief, a note meant to
+be read again — is created and maintained under `documents/` **inside the active worktree**.
 
-**If there is no active worktree, create one.** Do not write keepable files into a base checkout; per
-standard 10 the base exists only to track and synchronise with the remote, and work happens in a
-worktree beside it.
+**If there is no active worktree and the work is on the repository, create one.** Do not write keepable
+files into a base checkout; per standard 10 the base exists only to track and synchronise with the
+remote, and work happens in a worktree beside it.
+
+**`documents/` never displaces an owning location.** Decision records live in `docs/adr/` (standard 05);
+planning documents and run artifacts live in `docs/` and `docs/planning/` (standard 04); documentation
+lives in `docs/` and is never scattered beside the code it describes (standard 07). A decision record or
+plan placed under `documents/` is invisible to the indexes those standards require; route it to its
+owner and keep only unowned agent notes here.
 
 ## 14.3 At a repository root with no worktrees, keepables go to the development root's `documents`
 
-**Rule.** When working at a repository root where no worktrees exist, keepable files go to
-`${dev-root}/documents`, **organised into a subfolder** by goal, initiative, or another axis that will
-still make sense to someone who was not there.
+**Rule.** When working at a repository root where no worktrees exist **and the task does not call for
+one**, keepable files go to `${dev-root}/documents`, **organised into a subfolder** by goal,
+initiative, or another axis that will still make sense to someone who was not there.
+
+**This is a fallback, not an alternative to 14.2.** If the task is work on the repository, 14.2 applies
+first: create the worktree and keep its files there. 14.3 is where artefacts that belong to no
+worktree are kept — notes written while at the root without entering it, or notes about work spanning
+several repositories. Neither section permits writing keepables into the base checkout itself.
 
 Name the subfolder after the *goal*, not the date and not the tool. A reader looking for a decision
 knows what it was about; they do not know when it happened or which agent produced it.
@@ -102,8 +113,10 @@ its command and date, per standard 09 — durable text cites the log rather than
 - [ ] Every agent/provider directory in the profile is a link into `${dev-root}/agents`, and each link
       resolves to non-empty content when read *through*.
 - [ ] No absolute path was written into any artefact; locations are relative to `${dev-root}`.
-- [ ] Keepable files are in the active worktree's `documents/`, or — with no worktrees — in
-      `${dev-root}/documents` under a goal-named subfolder.
+- [ ] Keepable files are in the active worktree's `documents/`, or — no worktree and no repository work —
+      in `${dev-root}/documents` under a goal-named subfolder.
+- [ ] Nothing another standard owns was placed in `documents/`: decision records in `docs/adr/`,
+      planning documents and run artifacts in `docs/` and `docs/planning/`.
 - [ ] No keepable file was written into a base checkout.
 - [ ] Scratch is under `${dev-root}/.temp/<subfolder>` and was deleted when the task finished.
 - [ ] Anything promoted out of `.temp` was moved, not copied-and-forgotten.
