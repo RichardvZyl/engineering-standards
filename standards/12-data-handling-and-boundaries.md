@@ -34,14 +34,18 @@ precisely because its internal consistency could not be assumed. The live store,
 after the daemon was stopped with a verified-empty log, and its integrity check, page count, table count
 and row count all matched the source afterwards.
 
-**Ordered procedure — file-backed engines with a write-ahead log.** For any other engine, use that
-engine's own backup facility and its own verification; the steps below are not its procedure.
+**Ordered procedure — SQLite with a write-ahead log.** These steps rely on SQLite's own documented
+invariants: an empty WAL (after a completed checkpoint) means every committed page is in the primary
+file, and the `-wal`/`-shm` sidecars are regenerable, so they are never carried to the destination.
+They are SQLite's procedure, not a template for every log-shaped engine — a redo/undo log that is *not*
+regenerable makes step 4 below destructive rather than safe. For any other engine, use that engine's
+own documented backup facility and its own verification; the steps below are not its procedure.
 
 1. Stop the writing process. Confirm by process listing **and** by checking for open handles on the file.
 2. Confirm the write-ahead log is empty — that is what proves the content is all in the primary file.
 3. Run the engine's integrity check on the source.
-4. Copy the primary file and its key material. **Do not copy the log or shared-memory sidecars** — they
-   are regenerable, and a stale one is actively harmful.
+4. Copy the primary file and its key material. **Do not copy the `-wal` or `-shm` sidecars** — they
+   are regenerable for SQLite, and a stale one is actively harmful.
 5. Re-run the integrity check at the destination, and compare structural measures against the values
    captured in step 3 — not against any value written in a document.
 
