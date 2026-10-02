@@ -13,7 +13,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
-> **Minor when cut — `standards/VERSION` `0.6.0` → `0.7.0`.** Rules are added; nothing written
+## [0.7.0] — 2026-10-01
+
+> **Minor — `standards/VERSION` `0.6.0` → `0.7.0`.** Rules are added; nothing written
 > under `0.6.0` becomes invalid.
 
 ### Added — `standards/`
@@ -62,18 +64,20 @@ title — the reasoning is the part that makes a rule stick.
 
 - `standards/13-concurrent-agents-and-working-memory.md` — **one writer per file, whole-file
   writes.** Concurrent agents sharing a working-memory file corrupt it by interleaving partial
-  writes; the fix is ownership and atomicity, not locking discipline nobody follows. Carries the
+  writes; the fix is ownership, orchestrator-issued session identifiers in the filename, and
+  rename-into-place, not locking discipline nobody follows. Carries the
   detour rule and the reminder that a snapshot is not working memory.
 
 - `standards/14-agent-working-directories-and-file-placement.md` — **where an agent puts things.**
   Provider working directories are links into one `agents/` folder, which makes the whole set
   enumerable, movable and backup-able instead of scattered through a user profile. Files worth
-  keeping go in the active worktree's `documents/` — create a worktree if none exists — and never in
-  a base checkout. Scratch goes to a `.temp/` subfolder and is deleted when the task finishes,
-  because "later" does not arrive. Every location is expressed relative to a single configured
-  development-root value, so a relocation changes one value and nothing else: that is how a standard
-  about locations complies with 09 forbidding absolute paths, and the document says so rather than
-  leaving a reader to spot the tension.
+  keeping — only what standards 04, 05 and 07 do not already own — go in the active worktree's
+  `documents/`; create a worktree if none exists, or use `${dev-root}/documents` when there is no
+  repository work — and never a base checkout. Scratch goes to a `.temp/` subfolder and is deleted when
+  the task finishes, because "later" does not arrive. Every location is expressed relative to a
+  single configured development-root value, so a relocation changes one value and nothing else: that is
+  how a standard about locations complies with 09 forbidding absolute paths, and the document says so
+  rather than leaving a reader to spot the tension.
 
 - `standards/16-working-memory-protocol.md` — **three working-memory surfaces and one ordered rule
   that picks between them.** Ask in order, first yes decides: would this still be true in a different

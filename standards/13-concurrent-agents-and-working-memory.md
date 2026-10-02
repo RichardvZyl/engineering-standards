@@ -18,9 +18,10 @@ afterwards.**
 **Rule.** Each agent writes **exactly one** working-memory file, and **no agent ever writes another
 agent's file.** Every agent may read every file.
 
-**Mechanism.** The filename carries the session start time and the agent identity, so two agents cannot
-select the same name even when started in the same moment by the same orchestrator. Working-memory files
-live together in one directory per repository so a reader can enumerate them without knowing who is running.
+**Mechanism.** The filename carries the agent identity and a unique session identifier issued by the
+orchestrator — a nonce, not a timestamp — so two sessions for the same agent cannot select the same
+name even when launched together in the same instant. Working-memory files live together in one
+directory per repository so a reader can enumerate them without knowing who is running.
 
 **Why not a shared file with locking.** Locking across agents that may be on different hosts, in different
 containers, or crossing a filesystem boundary is exactly where advisory locks stop being reliable — see
@@ -34,16 +35,20 @@ not through a file two agents both write.
 
 ## 13.2 Whole-file writes, never append
 
-**Rule.** Write a working-memory file by replacing its entire contents. Do not append.
+**Rule.** Write a working-memory file by writing a temporary file in the same directory and renaming it
+into place. Do not append, and do not write the target file in place.
 
-**Reason.** A whole-file write is a single operation whose outcome is either the old content or the new one.
-An append is a read-modify-write against a file a reader may be scanning, and it accumulates history that
-nobody prunes. Since each file has exactly one writer (13.1), replacement loses nothing.
+**Reason.** A direct replacement is not a single old-or-new operation: the file is truncated and then
+written, so a reader may observe partial content, and a failure mid-write leaves a truncated file behind.
+Rename is the operation with the guarantee — the name refers to the old content or the new one, never to
+a mixture. An append is a read-modify-write against a file a reader may be scanning, and it accumulates
+history that nobody prunes. Since each file has exactly one writer (13.1), replacement loses nothing.
 
-**Caveat worth stating:** "atomic" is a property of the filesystem, not of the intention. Where a write must
-survive a crash mid-operation, write to a temporary name in the same directory and rename into place —
-rename is the operation with the guarantee. Do not do this across a filesystem boundary, where the
-guarantee does not hold.
+**Constraints on the mechanism.** "Atomic" is a property of the filesystem, not of the intention — the
+rename carries the guarantee only within one filesystem, which is why the temporary lives in the same
+directory and never across a filesystem boundary. Give the temporary a name a reader can tell from a
+finished file: until it is renamed into place it is debris, not working memory, and a crash mid-write
+leaves it behind like any other stale artefact.
 
 ## 13.3 The detour rule — update your own file when a finding changes the work
 
@@ -107,9 +112,11 @@ Where agents may run on more than one platform against the same tree:
 
 ## 13.6 Review checklist
 
-- [ ] Every working-memory file has exactly one writer, identified in its name along with the session start.
+- [ ] Every working-memory file has exactly one writer, identified in its name along with its
+      orchestrator-issued session identifier.
 - [ ] No agent writes another agent's file; reconciliation happens on read.
-- [ ] Writes replace whole files; any crash-critical write uses same-directory temporary-plus-rename.
+- [ ] Every write goes to a same-directory temporary name and is renamed into place; nothing is appended
+      or written in place.
 - [ ] Every invalidated statement has been retracted in place, with the reason, before work continued.
 - [ ] Generated context surfaces are neither written to as working memory nor read as authored.
 - [ ] Agent identifiers differ by more than case, avoid reserved names, and keep paths short.

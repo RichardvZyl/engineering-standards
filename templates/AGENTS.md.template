@@ -109,6 +109,7 @@ owning document, permanent, never renumbered, and cited in commit messages.
 - Log personal data, secrets, or anything crossing a tenant boundary.
 - Write a query against tenant-scoped data without a tenant predicate.
 - Edit anything under `standards/`.
+
 ## Durable references (standards 09) — two hard rules
 
 **Never write an absolute path.** Not in docs, ADRs, `AGENTS.md`, config, scripts, commit messages or
@@ -125,23 +126,11 @@ Both rules exist because written-down facts outlive the conditions that made the
 fact is worse than a missing one — it gets believed. See `standards/09-durable-references.md` for the
 full rationale and the review checklist.
 
-## Perseus: two different components — do not conflate them
+## Project tooling
 
-Perseus is **two** things. Confusing them wastes time, and has already done so.
+<!-- REPLACE: what an assistant must not guess about this project's own tooling — a memory store,
+     a context renderer, an MCP server. For each: what it is, when to read it, when to write to it,
+     and what must never be written into it. Keep it to this project's specifics; deep detail about
+     a tool's architecture belongs in the tool's own documentation, not here. Delete this section if
+     the project has none. Seeded optional-tooling notes live in `docs/ai/`. -->
 
-**Perseus Vault — this is memory.** A durable entity store (SQLite, full-text index, embeddings),
-spoken to as an **MCP stdio server**. Each MCP client launches **its own** vault process, and they all
-point at **one shared database** — that is the designed model, not a misconfiguration, so several
-concurrent vault processes are expected and correct. Reach for the vault when you need to **remember
-something across sessions, or recall what was decided before**. Semantic recall depends on the binary
-being built with embedding support; if recall reports unavailable, suspect the binary before the data.
-
-**Perseus Context Engine — this is a renderer.** It resolves a context template into a rendered
-context file, expanding directives (memory lookups, shell queries, checkpoints, task boards) into
-text. Its state lives in its own per-user directory, **separate from the vault's database**, and it is
-a **different binary**. Reach for the Context Engine when you need a **current snapshot of a
-workspace** assembled for a prompt.
-
-**In one line:** the **vault stores** what should outlast the session; the **Context Engine composes**
-what the next prompt should see. A rendered context file is a snapshot, not a source of truth —
-verify anything load-bearing against live tools.

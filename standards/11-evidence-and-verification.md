@@ -124,7 +124,9 @@ The service's own log is truthful and useless: it really did bind.
 
 - The service logs a successful start on the expected port.
 - Connections **time out** rather than being refused. A refusal means nothing is listening; a timeout means
-  something accepted and did not answer — which is a forwarder pointing at a dead upstream.
+  no answer arrived — most often a forwarder pointing at a dead upstream, but a filtered or dropped SYN
+  looks identical. A timeout is evidence to weigh, not proof that something accepted the connection: check
+  the redirection rules before concluding a dead upstream.
 - A reverse proxy in front returns a gateway error, because it hits the same redirected port.
 - The listener's owning process is a **service host**, not the application — because redirection rules are
   implemented by a system networking service rather than by whatever created them.

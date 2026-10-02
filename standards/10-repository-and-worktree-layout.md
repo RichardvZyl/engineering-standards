@@ -115,7 +115,8 @@ it writes an administrative directory under the main `.git/worktrees/<name>`, an
 
 **Therefore the rule:** a worktree is created for a piece of work and **removed when that work
 is merged or abandoned**, with `git worktree remove <path>` followed by `git worktree prune`.
-Verified: after both, `.git/worktrees` is gone entirely, leaving nothing behind.
+Verified: after both, the removed worktree's own administrative entry under `.git/worktrees/<name>` is
+gone and it no longer appears in `git worktree list` — entries for sibling worktrees correctly remain.
 
 - **`remove` alone is not enough** when the directory was deleted by hand — that leaves the
   admin entry orphaned. `prune` is what clears it.

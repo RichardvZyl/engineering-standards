@@ -15,13 +15,18 @@ security perimeter — makes the obvious approach wrong.
 ## 12.1 Never copy a database a process may hold open
 
 **Rule.** Do not copy, sync or archive a database file while any process may have it open. **Stop the
-writer, prove the write-ahead log is clean, then copy — and copy the primary file and its key material
-only, never stale sidecar files.**
+writer, take the copy by the owning engine's own rules, and prove the result with that engine.** The
+file-level procedure below is the contract for an engine whose state lives in a primary file with a
+write-ahead log and sidecars. An engine with a different storage shape — a rollback-journal engine, a
+server-managed data directory — is backed up by its own documented facility; its consistency semantics
+are not this rule's to invent.
 
-**Why the obvious approach fails.** A database's on-disk state is not confined to its primary file. Recent
-committed transactions may live in a write-ahead log alongside it. Copying the primary file alone yields a
-database missing its most recent writes; copying all files while a writer is active yields a set that is
-internally inconsistent; restoring a *stale* log next to a *newer* primary file can corrupt it outright.
+**Why the obvious approach fails.** Where recent committed transactions live in a write-ahead log
+alongside the primary file, a database's on-disk state is not confined to that file. Copying the primary
+file alone yields a database missing its most recent writes; copying all files while a writer is active
+yields a set that is internally inconsistent; restoring a *stale* log next to a *newer* primary file can
+corrupt it outright. Engines without that log-and-sidecar shape have their own failure modes and their
+own procedure — follow the engine, not this one.
 
 **Incident.** A frozen backup of a store was found holding a multi-megabyte un-checkpointed log beside a
 primary file with an older modification time — copied while open. It was demoted to a last-resort artefact
@@ -29,13 +34,18 @@ precisely because its internal consistency could not be assumed. The live store,
 after the daemon was stopped with a verified-empty log, and its integrity check, page count, table count
 and row count all matched the source afterwards.
 
-**Ordered procedure.**
+**Ordered procedure — SQLite with a write-ahead log.** These steps rely on SQLite's own documented
+invariants: an empty WAL (after a completed checkpoint) means every committed page is in the primary
+file, and the `-wal`/`-shm` sidecars are regenerable, so they are never carried to the destination.
+They are SQLite's procedure, not a template for every log-shaped engine — a redo/undo log that is *not*
+regenerable makes step 4 below destructive rather than safe. For any other engine, use that engine's
+own documented backup facility and its own verification; the steps below are not its procedure.
 
 1. Stop the writing process. Confirm by process listing **and** by checking for open handles on the file.
 2. Confirm the write-ahead log is empty — that is what proves the content is all in the primary file.
 3. Run the engine's integrity check on the source.
-4. Copy the primary file and its key material. **Do not copy the log or shared-memory sidecars** — they
-   are regenerable, and a stale one is actively harmful.
+4. Copy the primary file and its key material. **Do not copy the `-wal` or `-shm` sidecars** — they
+   are regenerable for SQLite, and a stale one is actively harmful.
 5. Re-run the integrity check at the destination, and compare structural measures against the values
    captured in step 3 — not against any value written in a document.
 
@@ -120,8 +130,6 @@ checked. The proposed remediation would have staged hundreds of files for no rea
 
 ## 12.5 Fix ownership rather than disabling the ownership check
 
-## 12.4 Fix ownership rather than disabling the ownership check
-
 **Rule.** When a tool refuses to operate on a repository because its ownership looks wrong, **correct the
 ownership**. Do not add a blanket exemption.
 
@@ -166,7 +174,8 @@ the exposure was reduced rather than removed.
 
 ## 12.7 Review checklist
 
-- [ ] No database was copied without its writer stopped and its log proven empty.
+- [ ] No database was copied with its writer still running; a file-backed engine's log was proven empty
+      before the copy.
 - [ ] No stale log or shared-memory sidecar was restored alongside a primary file.
 - [ ] Structural measures were compared before and after, against captured values rather than documented ones.
 - [ ] No database was opened across an interop boundary or network share.
