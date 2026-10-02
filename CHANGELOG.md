@@ -75,6 +75,41 @@ title — the reasoning is the part that makes a rule stick.
   about locations complies with 09 forbidding absolute paths, and the document says so rather than
   leaving a reader to spot the tension.
 
+- `standards/16-working-memory-protocol.md` — **three working-memory surfaces and one ordered rule
+  that picks between them.** Ask in order, first yes decides: would this still be true in a different
+  repository six months from now (→ the vault); does it describe work in flight across more than one
+  repository (→ the initiative file); otherwise (→ that repository's context). Ordered so two agents
+  agree, total so no fact has nowhere to go, and asked about the *fact* rather than about who found
+  it. Carries the tie-breakers that actually come up, including the one that matters most: a durable
+  convention discovered *during* cross-repo work goes to the vault, because the finding outlives the
+  initiative that produced it.
+
+  The spine is the snapshot rule. Both obvious designs failed identically — materialised once, never
+  re-derived. The rendered context file is overwritten wholesale on every prompt submission, so
+  **agents never write it**; it surfaces agent state by naming the directory, never by restating the
+  list, because a restated list is a second copy that goes stale the moment its owner amends the
+  first. The task board is **recorded as failed, not qualified**: it shows the items that existed
+  when work was scoped and never moves when a finding causes a detour.
+
+  Writes are **single-writer-per-file** — one file per agent, named from its session start and agent
+  identity, read all, write one. Copy-edit-merge-delete was rejected on two specific grounds: its
+  merge is an unguarded read-modify-write, so concurrent merges silently discard one another, and a
+  crash mid-merge leaves an orphan that no reader can classify. Files **accumulate across prompts**
+  until items are completed out, never reset per prompt, and anything closed by a detour carries the
+  drop reason as a required field.
+
+  The **detour rule**: update your own file whenever a finding changes the remaining work, not only
+  at prompt boundaries, because findings do not arrive on prompt boundaries. Amend with a one-clause
+  reason, or close out with the reason it was dropped — and never leave an item silently wrong, which
+  is the only state where the file actively misleads rather than merely being incomplete.
+
+  Adds the tier that was missing: **cross-repository work in process**, which previously had nowhere
+  to live — a wide migration would otherwise have become one partial copy of the same story per
+  repository. Its progress is **derived, never stored**: no percentage, no counts, no "N of M", because
+  a stored figure is the same defect in miniature. And it inherits the one-way dependency from
+  standard 15 — an initiative may reference a repository's context, but a repository's context must
+  never reference an initiative, so archiving an initiative breaks nothing.
+
 - `standards/15-workflow-and-plan-pair.md` — **recurring work produces a workflow *and* a plan, and
   the dependency runs one way.** The plan may reference the workflow; the workflow must never
   reference the plan. The workflow is durable and the plan is disposable, so a workflow pointing at a
