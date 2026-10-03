@@ -47,6 +47,24 @@ title — the reasoning is the part that makes a rule stick.
   synchronise with the remote; work happens beside it. Settles, once, which directory is safe to
   commit in.
 
+- `standards/11-evidence-and-verification.md` — **"absence from a page is not absence".** A
+  paginated, truncated or filtered reply is evidence about *that reply*, not about the set it came
+  from, so no absence may be concluded from it. Read the truncation signal — `hasMore`, `nextCursor`,
+  a `totalCount` larger than the items returned — **before** the contents, because the content is
+  more interesting than the envelope and so the envelope is what gets skipped. Confirm absence by
+  addressing the thing directly, by name or identifier or path: a direct request gives a definite
+  answer, whereas failing to find something in a list only tells you about the list.
+
+  Distinct from 11.1, and that distinction is the reason it earns a section: there the harness
+  misled you, here the tool answered **accurately and completely** and the error was entirely in the
+  reading. A default page size was chosen by whoever wrote the interface for their own convenience,
+  and a page boundary falls wherever the data happens to sort — so an entire category can sit just
+  past it with nothing in the output hinting at that. It bites hardest on the claims most worth
+  getting right: a capability is missing, a file is gone, a record was never written, a server is not
+  loaded, a dependency is absent. All five are claims about a *set*, and all five get made from one
+  page. Carries the worked example that produced it, in which a catalogue reply of twenty entries
+  next to `totalCount: 225` and `hasMore: true` was read as proof that a server did not exist.
+
 - `standards/11-evidence-and-verification.md` — **what counts as proof.** Verify from the correct
   harness: a check run from the wrong place fails for reasons unrelated to the thing being checked,
   which once reported an entire set of good backups as broken. Look for a rename before concluding a
@@ -113,6 +131,12 @@ title — the reasoning is the part that makes a rule stick.
   a stored figure is the same defect in miniature. And it inherits the one-way dependency from
   standard 15 — an initiative may reference a repository's context, but a repository's context must
   never reference an initiative, so archiving an initiative breaks nothing.
+
+  Its single-writer section **defers to standard 13** for the mechanism rather than restating it: the
+  session identifier is an orchestrator-issued nonce and not a timestamp, writes are renamed into
+  place, and reconciliation is a reader's job. Stated explicitly because an earlier draft named the
+  file from a session *start*, which is a timestamp and therefore contradicted 13.1 rather than
+  merely omitting it. Where the two appear to differ, 13 governs.
 
 - `standards/15-workflow-and-plan-pair.md` — **recurring work produces a workflow *and* a plan, and
   the dependency runs one way.** The plan may reference the workflow; the workflow must never

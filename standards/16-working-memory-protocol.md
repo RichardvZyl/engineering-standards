@@ -97,17 +97,28 @@ is in it is whatever its owners last wrote.
 
 ## 16.4 Single writer per file
 
-**Each agent owns exactly one working file and writes only that file.**
+**Each agent owns exactly one working file and writes only that file.** Standard 13 owns the
+mechanism; this section states what it means for these three surfaces and defers to 13 on the
+details rather than restating them.
 
 ```text
-${dev-root}/.working-memory/<initiative>/<session-start>--<agent-identity>.md
+${dev-root}/.working-memory/<initiative>/<agent-identity>--<session-id>.md
 ```
 
-The name carries the session start and the agent identity, so ownership is readable from the filename
-and two agents cannot collide by accident.
+**The session identifier is an orchestrator-issued nonce, not a timestamp** (13.1). Two sessions
+for the same agent launched in the same instant would select the same name from a timestamp, which
+is precisely the collision single ownership exists to prevent. The agent does not invent this
+identifier; it is issued to it.
+
+**Writes go to a temporary file in the same directory and are renamed into place** (13.2). Never
+appended, never written in place. Rename is the operation that carries the guarantee — a reader
+sees the old content or the new one, never a mixture — and it holds only within one filesystem,
+which is why the temporary never crosses a boundary.
 
 **Read freely, write only your own.** An agent reads every file in the directory to understand the
-whole initiative, and writes one.
+whole initiative, and writes one. **Reconciliation is a reader's job** (13.1): a reader merges what
+it finds across files, and writers never merge. Anything that must be *agreed* between agents goes
+through the orchestrator or a durable store, not through a file two agents both write.
 
 **The rejected alternative, and why.** Copy-edit-merge-delete — each agent copies the shared file,
 edits the copy, merges it back, deletes the copy — was rejected on two specific grounds:
@@ -119,7 +130,13 @@ edits the copy, merges it back, deletes the copy — was rejected on two specifi
   dead remnant? Nothing in the file answers that, so every reader must guess, and some guess wrong.
 
 Single ownership removes both: there is no merge, and a half-written file has exactly one owner who
-knows its state.
+knows its state. It also degrades well — an agent that dies mid-run leaves one stale file, not a
+corrupt shared one.
+
+**Where 13 and 16 divide.** Standard 13 is the concurrency mechanism and binds anywhere agents share
+a directory. Standard 16 says which *surface* a fact belongs to, and applies 13's mechanism to the
+tier 2 directory. Where they appear to differ, 13 governs: this section is a pointer, not a second
+copy of the rule — a restated rule is the same defect as a restated list (16.3).
 
 ## 16.5 Lifetime: accumulate, drain, do not reset
 
@@ -182,7 +199,7 @@ single repository, because the initiative is not owned by any one of them.
 | File | Owner | Holds |
 |---|---|---|
 | `initiative.md` | the initiative's owner, one writer | Goal, the repositories in scope and why, the decisions taken, what is explicitly out of scope |
-| `<session-start>--<agent>.md` | one agent each | That agent's remaining work and detours (16.4–16.6) |
+| `<agent-identity>--<session-id>.md` | one agent each | That agent's remaining work and detours (16.4–16.6) |
 | `completed/` | drained into by each owner | Closed items, with drop reasons |
 
 **How progress is represented without becoming a stale snapshot.** This is the part that has to be

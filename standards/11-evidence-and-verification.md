@@ -158,7 +158,39 @@ the migration rather than leaving them to be discovered.
 - When deleting such a rule, delete **only** the one identified. Others may be in active use for unrelated
   purposes.
 
-## 11.7 Review checklist
+## 11.7 Absence from a page is not absence
+
+**Rule.** A paginated, truncated, or filtered reply is evidence about **that reply**, not about the
+set it was drawn from. Never conclude a thing does not exist because it was not in the output you
+happened to receive.
+
+**Read the truncation signal before reading the contents.** Most interfaces tell you: `hasMore`,
+`nextCursor`, `totalCount` greater than the number of items returned, a `truncated` flag, an exit
+code, a "showing N of M" line. That signal is the first thing to look at and the easiest to skip,
+because the content is more interesting than the envelope.
+
+**Confirm absence by addressing the thing directly.** Ask for it by name, by identifier, by path.
+A direct request returns a definite answer — it is there, or it is not, and the error says which.
+Failing to find something in a list only tells you about the list.
+
+**Why this earns its own rule.** It is not the same failure as a wrong tool or a broken harness
+(11.1): here the tool answered **accurately and completely**, and the error was entirely in the
+reading. A default page is a design decision made by whoever wrote the interface, for their
+convenience and not for your question — and a page boundary falls wherever the data happens to sort,
+so a whole category can sit just past it with nothing in the output hinting at that.
+
+**Where it bites hardest:** concluding a capability is missing, a file is gone, a record was never
+written, a server is not loaded, or a dependency is absent. All five are claims about a *set*, and
+all five get made from a single page.
+
+**Worked example.** A tool catalogue was queried for its contents. The reply held twenty entries,
+every one from the same server, alongside `"totalCount": 225` and `"hasMore": true`. The conclusion
+drawn was that a different server was **not present at all** — and a capability was nearly reported
+as unavailable on that basis. Re-asking with a larger page returned six servers, the "missing" one
+among them. Both numbers needed to say otherwise were in the original reply, unread. Addressing the
+server by name had worked on the first attempt and would have settled it immediately.
+
+## 11.8 Review checklist
 
 - [ ] Any 100%-failure result was tested against the harness before the artefacts were doubted.
 - [ ] A known-good control was checked under the same corrected harness.
@@ -171,3 +203,4 @@ the migration rather than leaving them to be discovered.
       was trusted, and timeout was distinguished from refusal.
 - [ ] No redirection rule targets a dynamically assigned address; rules pointing into a retired virtual
       machine were deleted as part of retiring it.
+- [ ] No absence was concluded from a paginated or truncated reply: the truncation signal was read first, and absence was confirmed by addressing the thing directly.
