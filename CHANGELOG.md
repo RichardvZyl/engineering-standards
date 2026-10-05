@@ -20,7 +20,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ### Added — `standards/`
 
-**Seven standards earned from one repository migration.** Each was written from a wrong answer that
+**Standards `09` through `16`, and the preventive half of `08`, earned from one repository migration.**
+Each was written from a wrong answer that
 looked right at the time, which is why every entry below carries the reasoning and not only the
 title — the reasoning is the part that makes a rule stick.
 
@@ -99,12 +100,12 @@ title — the reasoning is the part that makes a rule stick.
 
 - `standards/16-working-memory-protocol.md` — **three working-memory surfaces and one ordered rule
   that picks between them.** Ask in order, first yes decides: would this still be true in a different
-  repository six months from now (→ the vault); does it describe work in flight across more than one
-  repository (→ the initiative file); otherwise (→ that repository's context). Ordered so two agents
+  repository six months from now (→ durable shared memory); does it describe work in flight across
+  more than one repository (→ the initiative file); otherwise (→ that repository's context). Ordered so two agents
   agree, total so no fact has nowhere to go, and asked about the *fact* rather than about who found
   it. Carries the tie-breakers that actually come up, including the one that matters most: a durable
-  convention discovered *during* cross-repo work goes to the vault, because the finding outlives the
-  initiative that produced it.
+  convention discovered *during* cross-repo work goes to durable shared memory, because the finding
+  outlives the initiative that produced it.
 
   The spine is the snapshot rule. Both obvious designs failed identically — materialised once, never
   re-derived. The rendered context file is overwritten wholesale on every prompt submission, so
@@ -113,9 +114,10 @@ title — the reasoning is the part that makes a rule stick.
   first. The task board is **recorded as failed, not qualified**: it shows the items that existed
   when work was scoped and never moves when a finding causes a detour.
 
-  Writes are **single-writer-per-file** — one file per agent, named from its session start and agent
-  identity, read all, write one. Copy-edit-merge-delete was rejected on two specific grounds: its
-  merge is an unguarded read-modify-write, so concurrent merges silently discard one another, and a
+  Writes are **single-writer-per-file** — one file per agent, named from its identity and an
+  orchestrator-issued session nonce, never a timestamp, read all, write one. Copy-edit-merge-delete
+  was rejected on two specific grounds: its merge is an unguarded read-modify-write, so concurrent
+  merges silently discard one another, and a
   crash mid-merge leaves an orphan that no reader can classify. Files **accumulate across prompts**
   until items are completed out, never reset per prompt, and anything closed by a detour carries the
   drop reason as a required field.

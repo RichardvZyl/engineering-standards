@@ -18,8 +18,8 @@ re-derived**, then read later as if it were still true.
 
 - The rendered context file is overwritten wholesale on every prompt submission. Anything an agent
   wrote into it is gone, and anything it says about in-flight work is as old as the last render.
-- The `@agora` task board shows the items that existed when work was *scoped*. When a finding causes
-  a detour, the board does not move. **Recorded as failed, not as qualified** — it was tried and it
+- A task board shows the items that existed when work was *scoped*. When a finding causes a
+  detour, the board does not move. **Recorded as failed, not as qualified** — it was tried and it
   misled.
 
 Working memory has to be **the thing that is amended**, not a picture of it. Every other rule in this
@@ -37,7 +37,7 @@ standard is a consequence:
 **Three questions, in order. The first "yes" decides the surface. Stop there.**
 
 > **1. Would this still be true, and still worth knowing, in a different repository six months
->    from now?** → **Tier 3, the vault.** Durable shared memory.
+>    from now?** → **Tier 3, durable shared memory.**
 >
 > **2. Does this describe work that is in flight right now, and does that work touch more than one
 >    repository?** → **Tier 2, the initiative file.** Cross-repo work in process.
@@ -68,7 +68,7 @@ who is asking — the same fact lands in the same place regardless of which agen
 ### 16.2.2 What must never go in any of them
 
 - **Secrets, credentials, tokens, keys.** Not in a context file, not in an initiative file, not in
-  the vault. Where a secret is needed, an indirection names it and the value is resolved at use time
+  durable shared memory. Where a secret is needed, an indirection names it and the value is resolved at use time
   (standards 09, 12).
 - **Session transcripts.** Working memory is the standing state, not the conversation.
 - **Volatile numbers presented as durable fact** — counts, sizes, hashes, timings. Record the check
@@ -144,11 +144,11 @@ A working file **accumulates across prompts within a session** until items are c
 **not** reset per prompt — a per-prompt reset is the snapshot failure in miniature, discarding the
 state that makes multi-prompt work coherent.
 
-Completed items **drain** into a completed-work location, grouped sensibly rather than left as a flat
-append log:
+Completed items **drain** into that owner's own file under the completed-work location, never into a
+shared file:
 
 ```text
-${dev-root}/.working-memory/<initiative>/completed/
+${dev-root}/.working-memory/<initiative>/completed/<agent-identity>--<session-id>.md
 ```
 
 An entry closed by a detour **must** carry the reason it was dropped. That field is required, not
@@ -176,8 +176,9 @@ further. A confidently wrong one makes them stop looking.
 
 ## 16.7 Tier 1 — per-project context
 
-**Scope:** one repository. **Location:** that repository's own context pack, per the Perseus layout
-already in use. **Written by:** whoever is working in that repository.
+**Scope:** one repository. **Location:** that repository's own project-context surface, named in its
+`AGENTS.md`. Which product stores it is project context, not part of this standard. **Written by:**
+whoever is working in that repository.
 
 Belongs here: what the project is and the shape of its layout; constraints not visible from the code;
 decisions local to this repository; where to look for what.
@@ -187,9 +188,9 @@ Does not belong here: anything spanning repositories (tier 2); anything durable 
 
 ## 16.8 Tier 2 — cross-repo work in process
 
-**The tier that did not exist, and the real gap.** A migration spanning nineteen repositories had
-nowhere to live: tier 1 would have meant nineteen partial copies of one story, and the vault is for
-what outlives the work, not the work itself.
+**The tier that did not exist, and the real gap.** A migration spanning many repositories had
+nowhere to live: tier 1 would have meant one partial copy of the story per repository, and durable
+shared memory is for what outlives the work, not the work itself.
 
 **Location:** `${dev-root}/.working-memory/<initiative>/` — one directory per initiative, outside any
 single repository, because the initiative is not owned by any one of them.
@@ -200,12 +201,16 @@ single repository, because the initiative is not owned by any one of them.
 |---|---|---|
 | `initiative.md` | the initiative's owner, one writer | Goal, the repositories in scope and why, the decisions taken, what is explicitly out of scope |
 | `<agent-identity>--<session-id>.md` | one agent each | That agent's remaining work and detours (16.4–16.6) |
-| `completed/` | drained into by each owner | Closed items, with drop reasons |
+| `completed/<agent-identity>--<session-id>.md` | the agent that owned the matching working file, one writer each | That agent's closed items, with drop reasons |
+
+Every file has exactly one writer, `completed/` included. Draining moves items into a file named
+like the working file they came from, never into a shared file. The initiative's owner is a role,
+not an exemption: an owner that also works items holds its own working file like any other agent.
 
 **How progress is represented without becoming a stale snapshot.** This is the part that has to be
 got right, and the rule is: **progress is derived, never stored.**
 
-- **No percentage, no counts, no "12 of 19 done" anywhere.** That is a materialised number, correct
+- **No percentage, no counts, no "N of M done" anywhere.** That is a materialised number, correct
   once and wrong thereafter — standard 09's volatile-number rule and 16.1's spine, same defect.
 - **Progress is read by looking** at what remains across the working files and what has drained into
   `completed/`. The directory *is* the progress.
@@ -229,9 +234,11 @@ repository stays.
 repository-specific in the relevant tier 1, then archive the directory. Archiving a directory that
 nothing durable points at breaks nothing. That is the dependency direction paying off.
 
-## 16.9 Tier 3 — the Perseus vault
+## 16.9 Tier 3 — durable shared memory
 
-**Durable shared memory**, already in place. The question is only what belongs in it.
+**Durable shared memory**: a store that persists across sessions and repositories. Which product
+implements it is project context, named in the consuming repository's `AGENTS.md`. The question
+here is only what belongs in it.
 
 **Belongs:** conventions and rulings that bind future work; decisions with their reasoning, so they
 are not relitigated; corrections — the wrong answer that looked right, which is the most valuable
@@ -244,23 +251,17 @@ transcripts; volatile numbers; unverified claims presented as settled.
 **Write it with its reasoning.** A rule without its cost is forgettable, and the next agent cannot
 tell a considered ruling from an arbitrary one. Record the wrong answer alongside the right one.
 
-## 16.10 Reachability over the tailnet
+## 16.10 Remote reachability is an access-control decision
 
-Verified 2026-10-02, not reasoned about:
+If the tiers are made reachable remotely — for example through a tool aggregator or a file server
+published on a private network — the reach of that path is an access-control decision, not a detail:
 
-- **Tier 3** — the vault answers through the tailnet-published aggregator.
-- **Tiers 1 and 2** — the `filesystem` server downstream of that same aggregator reads both. A real
-  per-project context file was read end to end over the tailnet URL through the proxy's meta-tools.
-
-**No new component is required.** The reads go through `tool_invoke` because the aggregator is a
-lazy-loading proxy; a direct `tools/list` shows only its three meta-tools (see the 1MCP section of
-`AGENTS.md`).
-
-**The standing consequence, which is a decision and not a detail.** That filesystem server's allowed
-root is the whole development root. Anything on the tailnet that can reach the aggregator can read
-**every file under it** — all three tiers, and everything else besides. That is a deliberate trade
-with a real cost; narrowing the server's root to the directories these tiers need would reduce it,
-at the price of a second server or a narrower one. Recorded so it is chosen rather than inherited.
+- **Scope the server's root to what the tiers need.** A file server whose allowed root is the whole
+  development root exposes every file under it, not only the three tiers.
+- **Require authentication at the published endpoint.** Network membership alone is not
+  authorisation.
+- **Record the chosen scope, and its cost, in project context or an ADR.** Verification evidence
+  belongs in a dated run log, not in this standard (standard 09).
 
 ## 16.11 Agreement with standard 14
 
@@ -284,7 +285,8 @@ categories each surface is:
 - [ ] Every fact was placed by the three ordered questions (16.2), not by convenience.
 - [ ] No secret, transcript, volatile number, or unverified claim in any tier (16.2.2).
 - [ ] No agent wrote the rendered context file; it surfaces agent state by pointer only (16.3).
-- [ ] Each agent wrote exactly one file, named from its session start and identity (16.4).
+- [ ] Each agent wrote exactly one working file, named from its identity and an orchestrator-issued
+      session nonce, never a timestamp (16.4).
 - [ ] The file accumulated across prompts; completed items drained with drop reasons recorded (16.5).
 - [ ] Every finding that changed the remaining work produced an amendment or a close-out, with a
       reason — nothing left silently wrong (16.6).

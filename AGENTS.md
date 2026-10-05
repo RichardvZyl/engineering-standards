@@ -155,3 +155,22 @@ workspace** assembled for a prompt.
 **In one line:** the **vault stores** what should outlast the session; the **Context Engine composes**
 what the next prompt should see. A rendered context file is a snapshot, not a source of truth —
 verify anything load-bearing against live tools.
+
+## Remote reachability of the working-memory tiers
+
+Project context for this estate, not a vendored rule. The generic boundary is standard 16.10:
+scope the published root to what the tiers need, require authentication at the endpoint, and
+keep verification evidence in a dated run log.
+
+Verified 2026-10-02:
+
+- Tier 3 answers through the tailnet-published aggregator.
+- Tiers 1 and 2 are read by the `filesystem` server downstream of that same aggregator. A
+  per-project context file was read end to end over the tailnet URL through the proxy's
+  meta-tools (`tool_invoke`). A direct `tools/list` shows only the aggregator's three meta-tools.
+
+**The cost, chosen for this estate.** That filesystem server's allowed root is the whole
+development root. Anything that can reach the aggregator can read every file under it, not only
+the three tiers. Narrowing the root would reduce that, at the price of a second server or a
+narrower one. Standard 16.10 forbids shipping that choice as a downstream default; it is
+recorded here so it stays a decision of this estate.
