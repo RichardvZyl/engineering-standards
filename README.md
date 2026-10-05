@@ -39,6 +39,14 @@ Drift you can see in a PR is a decision. Drift you cannot see is just entropy.
 | `06-review-standards.md` | The two review axes, kept deliberately unmerged |
 | `07-repo-layout.md` | Directory shape, naming, and the conventions/context division |
 | `08-keeping-documents-current.md` | What closing something obliges: the surfaces to sync, the stale-reference sweep, the debt marker |
+| `09-durable-references.md` | What may be written down: never an absolute path, never a volatile number |
+| `10-repository-and-worktree-layout.md` | The base checkout named `root`, worktrees as siblings, and never working on the base |
+| `11-evidence-and-verification.md` | What counts as proof: the right harness, rename before absence, a bind is not reachability |
+| `12-data-handling-and-boundaries.md` | Open databases, interoperability boundaries, line-ending policy, and where secrets may not go |
+| `13-concurrent-agents-and-working-memory.md` | Single writer per file, whole-file writes, and why a snapshot is not working memory |
+| `14-agent-working-directories-and-file-placement.md` | Where an agent puts things: links into `agents/`, keepables in a worktree, scratch in `.temp/` |
+| `15-workflow-and-plan-pair.md` | Recurring work produces a workflow **and** a plan, and the workflow never references the plan |
+| `16-working-memory-protocol.md` | Three working-memory surfaces and the ordered rule that picks one; a snapshot is not working memory |
 
 ### The scripts
 

@@ -104,5 +104,73 @@ convention and not a kit-wide dependency. Consuming repos treat Perseus/Vault
 as optional — seed from `templates/` only if the host has the stack.
 `standards/` does not require it.
 
-- **Vault** (shared across clients on this machine): `perseus_vault_*` MCP tools. Session start: `perseus_vault_context`. Durable facts: `perseus_vault_remember`. No secrets.
-- **Context Engine** (this repo only): `perseus` MCP tools and `.perseus/context.md`. Do not reuse another project's briefing.
+
+### Shared Vault (all repos on this machine)
+- Store: resolved at use time from `PERSEUS_VAULT_DB_PATH`, or the per-user default under `~/.perseus-vault/data/`, via the **`perseus-vault`** MCP (`perseus_vault_*` tools). The concrete path is an *input*, never a literal in a document — see standards 09.
+- **Read when:** session start (`perseus_vault_context`); before re-deciding something that may already be settled; looking up cross-repo conventions/facts.
+- **Write when:** durable facts, decisions, conventions (`perseus_vault_remember`); journal meaningful events. Prefer consolidate related memories over duplicates.
+- **Never write:** secrets, credentials, API keys, or session/chat transcripts (use https://perseus.observer/ledger/ for session history if needed).
+
+### Project Context Engine (this repo only)
+- Files: `.perseus/context.md` (and `pack.yaml`) via **`perseus`** MCP; edit context then `perseus render` when the briefing changes.
+- **Read when:** entering this repo; before planning or implementing work here.
+- **Write when:** project-specific status, constraints, architecture notes, and handoff briefing — keep them here, not in the shared Vault, unless they are true cross-repo conventions.
+- Do **not** reuse another project's `.perseus` briefing.
+
+
+
+## Durable references (standards 09) — two hard rules
+
+**Never write an absolute path.** Not in docs, ADRs, `AGENTS.md`, config, scripts, commit messages or
+durable memory. Use repo-relative paths, or a variable/environment indirection resolved at use time.
+If a path must be concrete at runtime, it is an *input*, not a literal. Examples obey this too,
+because examples get copied.
+
+**Never write down a number that is likely to change.** Record the check that regenerates it, not the
+value. File/object/commit counts, byte sizes, hashes, page and table counts, timings — all volatile.
+Ports, schema versions and policy limits are structural and may be stated. Measurements belong in a
+dated run log; durable text cites the log instead of inlining the figure.
+
+Both rules exist because written-down facts outlive the conditions that made them true, and a stale
+fact is worse than a missing one — it gets believed. See `standards/09-durable-references.md` for the
+full rationale and the review checklist.
+
+## Perseus: two different components — do not conflate them
+
+Perseus is **two** things. Confusing them wastes time, and has already done so.
+
+**Perseus Vault — this is memory.** A durable entity store (SQLite, full-text index, embeddings),
+spoken to as an **MCP stdio server**. Each MCP client launches **its own** vault process, and they all
+point at **one shared database** — that is the designed model, not a misconfiguration, so several
+concurrent vault processes are expected and correct. Reach for the vault when you need to **remember
+something across sessions, or recall what was decided before**. Semantic recall depends on the binary
+being built with embedding support; if recall reports unavailable, suspect the binary before the data.
+
+**Perseus Context Engine — this is a renderer.** It resolves a context template into a rendered
+context file, expanding directives (memory lookups, shell queries, checkpoints, task boards) into
+text. Its state lives in its own per-user directory, **separate from the vault's database**, and it is
+a **different binary**. Reach for the Context Engine when you need a **current snapshot of a
+workspace** assembled for a prompt.
+
+**In one line:** the **vault stores** what should outlast the session; the **Context Engine composes**
+what the next prompt should see. A rendered context file is a snapshot, not a source of truth —
+verify anything load-bearing against live tools.
+
+## Remote reachability of the working-memory tiers
+
+Project context for this estate, not a vendored rule. The generic boundary is standard 16.10:
+scope the published root to what the tiers need, require authentication at the endpoint, and
+keep verification evidence in a dated run log.
+
+Verified 2026-10-02:
+
+- Tier 3 answers through the tailnet-published aggregator.
+- Tiers 1 and 2 are read by the `filesystem` server downstream of that same aggregator. A
+  per-project context file was read end to end over the tailnet URL through the proxy's
+  meta-tools (`tool_invoke`). A direct `tools/list` shows only the aggregator's three meta-tools.
+
+**The cost, chosen for this estate.** That filesystem server's allowed root is the whole
+development root. Anything that can reach the aggregator can read every file under it, not only
+the three tiers. Narrowing the root would reduce that, at the price of a second server or a
+narrower one. Standard 16.10 forbids shipping that choice as a downstream default; it is
+recorded here so it stays a decision of this estate.

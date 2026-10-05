@@ -109,3 +109,28 @@ owning document, permanent, never renumbered, and cited in commit messages.
 - Log personal data, secrets, or anything crossing a tenant boundary.
 - Write a query against tenant-scoped data without a tenant predicate.
 - Edit anything under `standards/`.
+
+## Durable references (standards 09) — two hard rules
+
+**Never write an absolute path.** Not in docs, ADRs, `AGENTS.md`, config, scripts, commit messages or
+durable memory. Use repo-relative paths, or a variable/environment indirection resolved at use time.
+If a path must be concrete at runtime, it is an *input*, not a literal. Examples obey this too,
+because examples get copied.
+
+**Never write down a number that is likely to change.** Record the check that regenerates it, not the
+value. File/object/commit counts, byte sizes, hashes, page and table counts, timings — all volatile.
+Ports, schema versions and policy limits are structural and may be stated. Measurements belong in a
+dated run log; durable text cites the log instead of inlining the figure.
+
+Both rules exist because written-down facts outlive the conditions that made them true, and a stale
+fact is worse than a missing one — it gets believed. See `standards/09-durable-references.md` for the
+full rationale and the review checklist.
+
+## Project tooling
+
+<!-- REPLACE: what an assistant must not guess about this project's own tooling — a memory store,
+     a context renderer, an MCP server. For each: what it is, when to read it, when to write to it,
+     and what must never be written into it. Keep it to this project's specifics; deep detail about
+     a tool's architecture belongs in the tool's own documentation, not here. Delete this section if
+     the project has none. Seeded optional-tooling notes live in `docs/ai/`. -->
+
