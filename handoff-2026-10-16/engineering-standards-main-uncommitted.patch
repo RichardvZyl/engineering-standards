@@ -1,0 +1,65 @@
+diff --git a/AGENTS.md b/AGENTS.md
+index dd1b9c1..6c971ce 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -82,8 +82,10 @@ they may contain placeholders and instructions to the reader. Mark placeholders
+   consuming repo's `AGENTS.md`. There is no `CONTEXT.md` in this world.
+ - **`pwsh`, never `powershell.exe`.** Scripts here declare `#Requires -Version 7.0` and use
+   APIs Windows PowerShell 5.1 does not have. Some tooling defaults to 5.1 — be explicit.
+-- **Agent working state lives in `.agents/`.** `continue.md`, `worktrees/`, and `temp/` go
+-  in `<repo>/.agents/`, not `.claude/`. The `.claude/` directory holds only what the vendor
++- **Agent working state lives in `.agents/`.** `continue.md` and `temp/` go
++  in `<repo>/.agents/`, not `.claude/`. Worktrees do not: a worktree is a sibling of the base
++  checkout — `<repo>/root/` and `<repo>/<worktree-name>/` sit beside each other inside the
++  repository folder. The `.claude/` directory holds only what the vendor
+   harness requires (`settings.local.json`, per-repo `commands/`, `agents/`). Both are
+   git-ignored at every repo root. (ADR 0015 — `reusable-ai-tools`.)
+ - **Record known contradictions between planning documents** rather than silently resolving
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 96f8b0e..15153a0 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -13,6 +13,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
+ 
+ ## [Unreleased]
+ 
++### Fixed — `standards/`
++
++**Worktrees sit beside `root/`, and the texts that said otherwise now say so.** `standards/03` prescribed `git worktree add .agents/worktrees/<branch>` and `AGENTS.md` listed `worktrees/` under `.agents/`, both nesting a worktree inside the checkout. The layout is: the repository directory holds the base checkout in `root/` and every worktree as a direct sibling beside it — `<repo>/root/` and `<repo>/<worktree-name>/` — and nothing else. `standards/03` now gives `git worktree add ../<worktree-name>` from the base, `AGENTS.md` no longer claims `worktrees/` for `.agents/`, `standards/07`'s shape diagram is labelled the shape of a *checkout*, and `standards/10` 10.1 carries the explicit `${repos_root}/{repository_owner}/{repository_name}/` pattern with a worked example and the forbidden placements (`.agents/worktrees/`, inside `root/`, a `worktrees/` container, outside the repository directory). The repository directory also holds the shared resources that outlive branch switches — a local package feed and agent session state under `.session/{provider}/{model}/{session-id}/` (never AppData); both are covered by new 10.7.
++
+ ### Added — templates/
+ 
+ Suggestion-only notes for optional agent tooling — APM, agentrc, AGT, and
+diff --git a/standards/03-engineering-hygiene.md b/standards/03-engineering-hygiene.md
+index 72c1f20..d4067c4 100644
+--- a/standards/03-engineering-hygiene.md
++++ b/standards/03-engineering-hygiene.md
+@@ -49,8 +49,10 @@ mechanical checks are automated.
+   holding `.git/index.lock` blocks every index-writing command in that repository — `add`,
+   `commit`, `checkout` — and an agent reached through a sandbox frequently cannot clear the
+   lock. A worktree carries its own index and HEAD against the same object store, so the
+-  collision cannot arise: `git worktree add .agents/worktrees/<branch> -b <branch>
+-  origin/<default>`, work there, push, `git worktree remove` once merged. It also keeps a
++  collision cannot arise: from the base checkout run `git worktree add ../<worktree-name> -b <branch>
++  origin/<default>`, work there, push, `git worktree remove` once merged. The worktree sits
++  beside the base — `<repo>/<worktree-name>/` next to `<repo>/root/`, both direct
++  children of the repository folder — never under `.agents/worktrees/`. It also keeps a
+   human's in-progress work out of an agent's commit, and lets two agents hold the same
+   repository on different branches at once.
+ - **`core.fileMode` is `false`, and the shipped `.gitattributes` is vendored unedited.** A
+diff --git a/standards/07-repo-layout.md b/standards/07-repo-layout.md
+index c5fad2d..3f0e021 100644
+--- a/standards/07-repo-layout.md
++++ b/standards/07-repo-layout.md
+@@ -9,6 +9,11 @@
+ 
+ ## The shape
+ 
++The shape below describes the **checkout** — the working tree an agent edits — not the
++repository directory itself. Where the base checkout and its worktrees sit side by side
++inside the repository directory, this is the shape of `root/` (or of a worktree), and it is
++not repeated at the repository-directory level.
++
+ ```
+ <repo>/
+   README.md            what this is, how to run it, how to test it
