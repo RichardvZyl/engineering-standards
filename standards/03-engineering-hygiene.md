@@ -49,8 +49,10 @@ mechanical checks are automated.
   holding `.git/index.lock` blocks every index-writing command in that repository — `add`,
   `commit`, `checkout` — and an agent reached through a sandbox frequently cannot clear the
   lock. A worktree carries its own index and HEAD against the same object store, so the
-  collision cannot arise: `git worktree add .agents/worktrees/<branch> -b <branch>
-  origin/<default>`, work there, push, `git worktree remove` once merged. It also keeps a
+  collision cannot arise: from the base checkout run `git worktree add ../<worktree-name> -b <branch>
+  origin/<default>`, work there, push, `git worktree remove` once merged. The worktree sits
+  beside the base — `<repo>/<worktree-name>/` next to `<repo>/root/`, both direct
+  children of the repository folder — never under `.agents/worktrees/`. It also keeps a
   human's in-progress work out of an agent's commit, and lets two agents hold the same
   repository on different branches at once.
 - **`core.fileMode` is `false`, and the shipped `.gitattributes` is vendored unedited.** A

@@ -10,17 +10,35 @@
 ## 10.1 Shape
 
 A repository occupies a **directory named after the repository**. Inside it, the base checkout and every
-linked worktree sit as **siblings**:
+linked worktree sit as **siblings** — both are direct children of the repository directory:
 
 ```text
-<repo-name>/
+${repos_root}/{repository_owner}/{repository_name}/
   root/                  <- the base checkout. Tracks origin. Never worked on directly.
   <worktree-name>/       <- a worktree. Where work happens.
   <worktree-name>/       <- another worktree, sibling of the base and of its peers.
 ```
 
-Nothing else lives at that level. Worktrees are never nested inside the base, and the base is never the
-repository directory itself.
+**Worked example** — one repository directory holding the base and two worktrees (names
+illustrative):
+
+```text
+repositories/acme/payments/     <- one repository directory
+  root/                         <- the base checkout
+  fix-ledger-rounding/          <- a worktree, sibling of root
+  docs-sync/                    <- another worktree, sibling of root
+```
+
+No worktree hides behind a container — not `worktrees/`, not a dotted `.worktrees/`, not
+`.agents/worktrees/`, never outside the repository directory. Worktrees are never nested inside
+the base, and the base is never the repository directory itself. Add one from the base:
+`git worktree add ../<worktree-name> -b <branch> origin/<trunk>`.
+
+The one class of non-checkout item that may live at this level is **repository-level shared
+resources**: things that belong to the repository as a whole and must survive branch switches —
+a local package feed (`local-feed/`), agent session state (`.session/`, section 10.7 below),
+repository-level instruction files. They are never confused with checkouts: a checkout is
+`root/` or a named worktree, nothing else.
 
 ## 10.2 The base directory is named `root`
 
@@ -135,10 +153,41 @@ clone rather than a worktree. It costs a second object store and its own fetch a
 buys a `.git` that nothing else writes to. A worktree is the right default; a clone is the
 escape hatch.
 
-## 10.7 Review checklist
+## 10.7 Agent session state lives in `.session/`, not in AppData
+
+**Rule.** The running state an agent accumulates while working a repository — session
+checkpoints, resume files, per-session scratch — is stored **inside the repository directory**,
+keyed by provider, model and session id:
+
+```text
+${repos_root}/{repository_owner}/{repository_name}/.session/{provider}/{model}/{session-id}/
+```
+
+Worked example:
+
+```text
+repositories/acme/payments/.session/claude/opus/20261009-134054/
+  session_state.md
+  timeline.md
+```
+
+Because `.session/` is a sibling of `root/`, the state is shared by every worktree of that
+repository and lives outside all git trees — it is never committed, and it moves when the
+repository moves. A provider's own store under the user's `AppData`/`Local` directories is a
+**cache the vendor owns, not state of record**: nothing of record goes there under this
+convention. `{session-id}` is unique per session — agents do not write into another session's
+directory — and a session's directory is deleted once its state is captured elsewhere.
+
+## 10.8 Review checklist
 
 - [ ] Base checkout is named `root` and sits inside the repository directory.
 - [ ] Every worktree is a sibling of `root`, not nested within it.
+- [ ] No worktree sits under `.agents/worktrees/`, inside `root/`, in a `worktrees/`
+      container, or outside the repository directory.
+- [ ] Repository-level shared resources (a local feed, `.session/`) sit at the
+      repository-directory level, outside every checkout, and are not mistaken for checkouts.
+- [ ] Agent session state lives under `.session/{provider}/{model}/{session-id}/` inside the
+      repository directory — never as the canonical store in AppData/Local.
 - [ ] The base has no local commits and no uncommitted changes.
 - [ ] The base's trunk branch is a fast-forward of origin's trunk.
 - [ ] Unfinished work is in a worktree, not in the base.
