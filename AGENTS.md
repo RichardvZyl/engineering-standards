@@ -82,8 +82,10 @@ they may contain placeholders and instructions to the reader. Mark placeholders 
   consuming repo's `AGENTS.md`. There is no `CONTEXT.md` in this world.
 - **`pwsh`, never `powershell.exe`.** Scripts here declare `#Requires -Version 7.0` and use
   APIs Windows PowerShell 5.1 does not have. Some tooling defaults to 5.1 — be explicit.
-- **Agent working state lives in `.agents/`.** `continue.md`, `worktrees/`, and `temp/` go
-  in `<repo>/.agents/`, not `.claude/`. The `.claude/` directory holds only what the vendor
+- **Agent working state lives in `.agents/`.** `continue.md` and `temp/` go
+  in `<repo>/.agents/`, not `.claude/`. Worktrees do not: a worktree is a sibling of the base
+  checkout — `<repo>/root/` and `<repo>/<worktree-name>/` sit beside each other inside the
+  repository folder. The `.claude/` directory holds only what the vendor
   harness requires (`settings.local.json`, per-repo `commands/`, `agents/`). Both are
   git-ignored at every repo root. (ADR 0015 — `reusable-ai-tools`.)
 - **Record known contradictions between planning documents** rather than silently resolving
