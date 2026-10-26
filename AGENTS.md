@@ -174,3 +174,20 @@ development root. Anything that can reach the aggregator can read every file und
 the three tiers. Narrowing the root would reduce that, at the price of a second server or a
 narrower one. Standard 16.10 forbids shipping that choice as a downstream default; it is
 recorded here so it stays a decision of this estate.
+
+## Memory Recall (on demand)
+
+Long-term memory is not pre-loaded into this context (profile: default, memory posture: on_demand).
+Retrieve exactly what a task needs, when it needs it:
+
+- `@memory mode=search query="<topic>" k=5` — local project memory (FTS5)
+- `@memory mode=narrative` — the distilled project narrative
+- MCP tools: `perseus_memory` (local recall), `perseus_mneme` (cross-session vault)
+
+Query the vault when a past decision, architecture note, or prior-session
+fact would change your answer; otherwise proceed without it.
+
+_Persistent cross-session memory (Perseus Vault) is optional. If recall returns
+nothing, it may not be installed — run `perseus doctor` to check._
+
+<!-- perseus: @memory static dump suppressed (memory posture: on_demand); use mode=narrative or force=true to inject entries. -->
