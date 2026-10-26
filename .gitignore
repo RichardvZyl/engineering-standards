@@ -35,7 +35,9 @@ coverage*.info
 *.trx
 BenchmarkDotNet.Artifacts/
 
-## Agent working state — never committed. The resume checkpoint is local state only.
+## Agent working state — never committed. Legacy location; current resume files live in
+## documents/working-memory/ and are deliberately NOT ignored (git must refuse to remove a
+## worktree that still holds one).
 ## Exception: .claude/settings.json is shared, non-personal repo config (commit attribution).
 .claude/*
 !.claude/settings.json
