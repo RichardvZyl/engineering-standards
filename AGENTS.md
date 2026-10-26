@@ -82,8 +82,10 @@ they may contain placeholders and instructions to the reader. Mark placeholders 
   consuming repo's `AGENTS.md`. There is no `CONTEXT.md` in this world.
 - **`pwsh`, never `powershell.exe`.** Scripts here declare `#Requires -Version 7.0` and use
   APIs Windows PowerShell 5.1 does not have. Some tooling defaults to 5.1 — be explicit.
-- **Agent working state lives in `.agents/`.** `continue.md`, `worktrees/`, and `temp/` go
-  in `<repo>/.agents/`, not `.claude/`. The `.claude/` directory holds only what the vendor
+- **Agent working state lives in `.agents/`.** `continue.md` and `temp/` go
+  in `<repo>/.agents/`, not `.claude/`. Worktrees do not: a worktree is a sibling of the base
+  checkout — `<repo>/root/` and `<repo>/<worktree-name>/` sit beside each other inside the
+  repository folder. The `.claude/` directory holds only what the vendor
   harness requires (`settings.local.json`, per-repo `commands/`, `agents/`). Both are
   git-ignored at every repo root. (ADR 0015 — `reusable-ai-tools`.)
 - **Record known contradictions between planning documents** rather than silently resolving
@@ -174,3 +176,20 @@ development root. Anything that can reach the aggregator can read every file und
 the three tiers. Narrowing the root would reduce that, at the price of a second server or a
 narrower one. Standard 16.10 forbids shipping that choice as a downstream default; it is
 recorded here so it stays a decision of this estate.
+
+## Memory Recall (on demand)
+
+Long-term memory is not pre-loaded into this context (profile: default, memory posture: on_demand).
+Retrieve exactly what a task needs, when it needs it:
+
+- `@memory mode=search query="<topic>" k=5` — local project memory (FTS5)
+- `@memory mode=narrative` — the distilled project narrative
+- MCP tools: `perseus_memory` (local recall), `perseus_mneme` (cross-session vault)
+
+Query the vault when a past decision, architecture note, or prior-session
+fact would change your answer; otherwise proceed without it.
+
+_Persistent cross-session memory (Perseus Vault) is optional. If recall returns
+nothing, it may not be installed — run `perseus doctor` to check._
+
+<!-- perseus: @memory static dump suppressed (memory posture: on_demand); use mode=narrative or force=true to inject entries. -->
