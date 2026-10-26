@@ -9,6 +9,11 @@
 
 ## The shape
 
+The shape below describes the **checkout** — the working tree an agent edits — not the
+repository directory itself. Where the base checkout and its worktrees sit side by side
+inside the repository directory, this is the shape of `root/` (or of a worktree), and it is
+not repeated at the repository-directory level.
+
 ```
 <repo>/
   README.md            what this is, how to run it, how to test it

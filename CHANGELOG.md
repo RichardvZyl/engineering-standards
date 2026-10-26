@@ -13,6 +13,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+## [0.8.0] — 2026-10-26
+
+> **Minor — `standards/VERSION` `0.7.0` → `0.8.0`.** Standard 10 gains the session-state location, and standards 03, 07 and 10 now require the same worktree layout.
+
+### Fixed — `standards/`
+
+**Worktrees sit beside `root/`, and the texts that said otherwise now say so.** `standards/03` prescribed `git worktree add .agents/worktrees/<branch>` and `AGENTS.md` listed `worktrees/` under `.agents/`, both nesting a worktree inside the checkout. The layout is: the repository directory holds the base checkout in `root/` and every worktree as a direct sibling beside it — `<repo>/root/` and `<repo>/<worktree-name>/` — and nothing else. `standards/03` now gives `git worktree add ../<worktree-name>` from the base, `AGENTS.md` no longer claims `worktrees/` for `.agents/`, `standards/07`'s shape diagram is labelled the shape of a *checkout*, and `standards/10` 10.1 carries the explicit `${repos_root}/{repository_owner}/{repository_name}/` pattern with a worked example and the forbidden placements (`.agents/worktrees/`, inside `root/`, a `worktrees/` container, outside the repository directory). The repository directory also holds the shared resources that outlive branch switches — a local package feed and agent session state under `.session/{provider}/{model}/{session-id}/` (never AppData); both are covered by new 10.7.
+
 ## [0.7.0] — 2026-10-01
 
 > **Minor — `standards/VERSION` `0.6.0` → `0.7.0`.** Rules are added; nothing written
