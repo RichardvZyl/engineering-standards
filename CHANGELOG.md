@@ -13,6 +13,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+## [0.8.1] — 2026-10-30
+
+> **Patch — `standards/VERSION` `0.8.0` → `0.8.1`.** Wording only; nothing that was compliant under `0.8.0` stops being compliant.
+
+### Fixed — `standards/`
+
+**One writer per file, not one file per agent.** `standards/13` 13.1 and `standards/16` 16.4 said each agent writes *exactly one* working-memory file, while 16.5 drains closed items into a second, per-agent file under `completed/` and 16.8 already said every file has exactly one writer, `completed/` included. The rule was always single ownership. 13.1 now states it as one writer per file and names an agent's own files (its working file and any paired drain file). 16.4 and the 16.12 checklist now allow the working file plus its matching `completed/` drain file, both named from the agent's identity and session nonce.
+
 ## [0.8.0] — 2026-10-26
 
 > **Minor — `standards/VERSION` `0.7.0` → `0.8.0`.** Standard 10 gains the session-state location, and standards 03, 07 and 10 now require the same worktree layout.
