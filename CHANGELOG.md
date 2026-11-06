@@ -13,6 +13,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+> **Minor (rule added).** `standards/VERSION` is left for the release that bundles this; draft #23 already claims `0.9.0`.
+
+### Added — `standards/`
+
+**No code outside its own repository — ever (`standards/10` 10.8).** An absolute rule: no code may exist or run outside its own git repository: no staging folders, and no source held only inside WSL, a VM or a container. Services run from merged release builds of that repository. Third-party code is pinned, not copied. The review checklist moves to 10.9 and gains two items for it. Earned when a live service chain was found running from an untracked staging folder and unmerged worktrees, so nobody could say which commit was serving.
+
 ## [0.8.1] — 2026-10-30
 
 > **Patch — `standards/VERSION` `0.8.0` → `0.8.1`.** Wording only; nothing that was compliant under `0.8.0` stops being compliant.
