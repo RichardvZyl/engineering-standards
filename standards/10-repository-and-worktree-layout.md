@@ -233,3 +233,7 @@ it for review, and repoint the service to the release build only after that chan
       inside WSL, a VM or a container (10.8).
 - [ ] Every long-running service starts from a merged release build of its repository, not from
       an unmerged worktree or a hand-patched copy (10.8).
+
+## A2A outage recovery exception
+
+All real work goes to A2A peers through the front door. Exception: when A2A is down, bots run the Grok CLI directly (E:\Tools\npm-global\grok.ps1), not through A2A, and only to restore A2A.
