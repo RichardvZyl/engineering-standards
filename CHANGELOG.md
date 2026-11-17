@@ -13,6 +13,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+## [0.10.0] — 2026-11-17
+
+> **Minor — `standards/VERSION` `0.9.0` → `0.10.0`.** A rule is added. Nothing written under `0.9.0` becomes invalid. The review checklist that was 16.12 is now 16.13.
+
+### Added — `standards/`
+
+**File handover when the team's board or coordination tool is unreachable.** Merged into `standards/16-working-memory-protocol.md` as **16.12**, not added as a new file. While the board can be reached, shared job status stays on it. When it is down, agents keep a durable shared handover — `context.md` (goal, where the plan and job status live, a tick list, an update log), `todo/` (one file per open item, with the pointers and a notes section), and `done/` (one file per finished topic; trimming moves detail here and does not delete it). Every open bullet points at its `todo/` file. Thin files are filled in. When the board returns, status is synced back and the sync is recorded; the files stay as the outage record and stop being a second live checklist. No secrets.
+
+Kept by cross-reference rather than restated:
+
+- **16.1** — the board remains a failed *working-memory* surface when it is an unamended snapshot. 16.12 is the substitute for the coordination tool, and that substitute is amended.
+- **13.1 / 13.2** — one writer per handover file (`context.md`, each `todo/` file, each `done/` file) and whole-file rename-into-place. One sentence in 13.1 says the handover is not a shared-write exception. 13.6 is unchanged; 16.13 carries the handover checks.
+- **14.4** — the handover is not scratch and does not go under `.temp/`. One paragraph in 14.4 and a 14.6 checklist line.
+- **16.5** — `done/` follows the existing drain rule (move, do not delete, record why). It is not a second copy of that rule.
+- **04** — an existing planning document stays the source of truth for items it owns; `context.md` points at it.
+- **09, 12, 16.2.2** — no absolute path, no secrets. Cited, not rewritten.
+
 ## [0.9.0] — 2026-11-05
 
 > **Minor — `standards/VERSION` `0.8.1` → `0.9.0`.** Standard 00 gains the structured architecture-brief output style and canonical example; standard 04 and the WTDR template require fully qualified category names plus claim glosses on every identifier citation.

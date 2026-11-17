@@ -92,6 +92,10 @@ they may contain placeholders and instructions to the reader. Mark placeholders 
   worktree is a sibling of the base checkout — `<repo>/root/` and `<repo>/<worktree-name>/` sit
   beside each other inside the repository folder (standard 10). The `.claude/` directory holds
   only what the vendor harness requires (`settings.local.json`, per-repo `commands/`, `agents/`).
+- **When the team's board or coordination tool is unreachable**, shared job status is the file
+  handover in standard 16.12: `context.md`, `todo/`, and `done/` in a durable shared location.
+  Chat and private memory are not that handover. Sync it back onto the board when the board
+  returns, and record the sync.
 - **Record known contradictions between planning documents** rather than silently resolving
   one in favour of the other. The contradiction is information.
 

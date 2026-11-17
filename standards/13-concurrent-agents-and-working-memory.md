@@ -18,7 +18,8 @@ afterwards.**
 **Rule.** Every working-memory file has **exactly one writer**, and **no agent ever writes another
 agent's file.** An agent's own files are the ones named from its identity and session identifier: its
 working file, and any drain file a protocol pairs with it (standard 16.5). Every agent may read every
-file.
+file. A board-fallback handover (standard 16.12) is not an exception: `context.md`, each file under
+`todo/`, and each file under `done/` still has exactly one writer.
 
 **Mechanism.** The filename carries the agent identity and a unique session identifier issued by the
 orchestrator — a nonce, not a timestamp — so two sessions for the same agent cannot select the same
