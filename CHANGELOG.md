@@ -13,6 +13,47 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+## [0.10.0] — 2026-11-17
+
+> **Minor — `standards/VERSION` `0.9.0` → `0.10.0`.** Rules are added. Nothing written under
+> `0.9.0` becomes invalid.
+
+### Added — `standards/`
+
+**Standard `17` — agent execution.** How an agent runs work, published in a file the work is
+checked against. The obligations had been stated in conversation, which is the condition
+`17.1` exists to forbid. They are one subject, so they ship as one standard. Hygiene (`03`),
+evidence (`11`), working-memory writes (`13`), file placement (`14`), and the memory-surface
+rule (`16`) keep their own jobs; `17` points at them and does not restate them.
+
+- `standards/17-agent-execution.md` — **rules in checked files, script first, completion by
+  notice, long work detached.** 17.1: a rule an agent must follow lives in a file the work is
+  checked against; chat and memory are not that file. 17.2 is the script-first rule, carried
+  verbatim: prefer a script whenever it is meaningfully cheaper than performing the work by
+  inference and the model's only role is to interpret or act on the script's output; the
+  script runs to completion without being interrupted by new messages, leaves no residual
+  process, window, or file beyond its explicit report, and includes an explicit completion
+  signal (exit code plus a final status line, a well-known report file, or an equivalent
+  machine-readable marker). Fallback is the next-cheapest reliable method, and only after the
+  script fails or is clearly unsuitable. 17.3: the agent is notified when the script finishes
+  and does not poll. A harness that can start a background command with no model attached
+  does so and delivers the notice; the agent then reads only the summary. Any other harness
+  gets a done marker or report plus a completion message. The summary is that named signal,
+  which is 11.3 and 11.7 applied to job completion. 17.4: work that can outlive the turn runs
+  detached from the shell and the chat, so neither a message nor a disconnect interrupts it.
+  The job writes an ETA line and, on finish, a `.done` marker under
+  `${dev-root}/.temp/<task>/`, as the single writer, by rename into place (13.1, 13.2). A
+  reconnect check, itself detached, is scheduled from that ETA at the last 30%, 20%, 10%, and
+  0. A five-minute loop is the schedule this rule refuses. Each look exits; a checkpoint that
+  came due while disconnected runs when the connection returns; a dead job is resumed. The
+  ETA stays in the report, because 09 forbids copying a volatile number into a durable
+  document. When the operator returns and starts work, the job is finished or already resumed.
+
+### Changed
+
+- `README.md` — the standards-set index gains the `17-agent-execution.md` row. The row names
+  the owner. It is not a second statement of the rules.
+
 ## [0.9.0] — 2026-11-05
 
 > **Minor — `standards/VERSION` `0.8.1` → `0.9.0`.** Standard 00 gains the structured architecture-brief output style and canonical example; standard 04 and the WTDR template require fully qualified category names plus claim glosses on every identifier citation.
