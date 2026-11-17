@@ -99,6 +99,11 @@ needed**.
   14.3 rather than leaving it and hoping.
 - `.temp` is not a cache and not an archive. If a thing must survive, it is not scratch.
 
+**Not scratch.** The file handover used when the team's board or coordination tool is unreachable
+(standard 16.12) is shared coordination state. It does not go under `.temp/`, and it is not deleted
+when a task finishes. It stays until the board is synced and the handover remains only as the record
+of the outage.
+
 ## 14.5 Deciding between keepable and scratch
 
 The test is not how much effort it took. It is: **would a future reader need this to understand a
@@ -119,4 +124,5 @@ its command and date, per standard 09 — durable text cites the log rather than
       planning documents and run artifacts in `docs/` and `docs/planning/`.
 - [ ] No keepable file was written into a base checkout.
 - [ ] Scratch is under `${dev-root}/.temp/<subfolder>` and was deleted when the task finished.
+- [ ] A board-fallback handover (standard 16.12) was not placed under `.temp/`.
 - [ ] Anything promoted out of `.temp` was moved, not copied-and-forgotten.

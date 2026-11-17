@@ -18,9 +18,11 @@ re-derived**, then read later as if it were still true.
 
 - The rendered context file is overwritten wholesale on every prompt submission. Anything an agent
   wrote into it is gone, and anything it says about in-flight work is as old as the last render.
-- A task board shows the items that existed when work was *scoped*. When a finding causes a
-  detour, the board does not move. **Recorded as failed, not as qualified** — it was tried and it
-  misled.
+- A task board used as working memory shows the items that existed when work was *scoped*. When a
+  finding causes a detour, that board does not move unless someone amends it. **Recorded as failed
+  as a working-memory surface, not as qualified** — it was tried and it misled. Shared job status
+  still belongs on the team's board while the board can be reached, and moves to the file handover
+  in 16.12 when it cannot. The amended record is the state. An unamended snapshot is not.
 
 Working memory has to be **the thing that is amended**, not a picture of it. Every other rule in this
 standard is a consequence:
@@ -281,7 +283,72 @@ categories each surface is:
 - **Generated roll-ups** are scratch under 14.4 and are deleted, which is the same conclusion 16.8
   reaches from the snapshot rule. Two rules, one answer.
 
-## 16.12 Review checklist
+## 16.12 Fallback when the team's board or coordination tool is unavailable
+
+**Rule.** When the team's board or coordination tool is down or unreachable, shared job status lives
+in a file handover in a durable, shared location. Chat and private agent memory do not hold that
+handover.
+
+While the board can be reached, shared job status and the shared checklist live on it. The board is
+still not working memory (16.1). A detour that changes the remaining work is written into the owning
+agent's file (16.6) and onto the board. 16.1 records a different failure: an unamended board,
+snapshotted when the work was scoped, later read as if it had moved. This section is the substitute
+for an unreachable board. It is not a fourth tier, and it does not restate 16.4–16.8.
+
+**Location.** One root for the outage, chosen once and named in `context.md`. It is durable and
+shared. It is not scratch (14.4) and not a rendered context file (16.3, 13.4). Express the root
+relative to a configured value, never as an absolute path (standard 09).
+
+- One repository: `docs/planning/<effort>/` in that repository (standards 04 and 14.2).
+- Several repositories, or no repository: a directory under `${dev-root}` that outlives the session.
+  When a tier 2 initiative directory already exists (16.8), the handover is a subdirectory of it, so
+  it does not collide with `initiative.md` or the per-agent working files. Otherwise it is its own
+  directory beside `.working-memory/`, named for the effort.
+- A staging area outside any repository is the right root when that area is the durable place every
+  agent on the work can read. Name it from a configured root.
+
+**Shape.**
+
+```text
+<handover-root>/
+  context.md
+  done/<topic>.md
+  todo/<item>.md
+```
+
+- **`context.md`** states the goal in short. It names the single source of truth for the plan: an
+  existing planning document when one owns the items (standard 04), otherwise this file. It names
+  where job status lives while the board is down — this handover. It carries a broad tick list of
+  everything that remains, and a short update log of dated lines as the work proceeds. Every open
+  bullet points at its file under `todo/`. The tick list does not carry the detail, and it does not
+  store a count or a percentage (16.8, standard 09). Progress is which bullets remain.
+- **`todo/`** holds one file per unticked item. Each file points at the `done/` files and the other
+  context that item needs, and it has a notes section for progress. A thin file is filled in before
+  the writer leaves it: the goal of the item, the pointers, and the current note. A title alone is
+  not a handover.
+- **`done/`** holds one file per finished topic, with the full detail, and is read only when that
+  detail is needed. Trimming moves detail here. It does not delete it. An item closed because the
+  premise was wrong says why (16.5). The drain rule is 16.5's; this directory is that same move,
+  shared with the next reader of the handover rather than kept as one agent's private drain.
+
+**Ownership.** One writer per file, whole-file writes renamed into place (13.1, 13.2). The
+coordinating agent owns `context.md`. The agent doing an item owns that item's file under `todo/`.
+The agent who finishes a topic writes its file under `done/`.
+
+**Currency.** The handover is updated when the remaining work changes, not at the end of the outage.
+The same finding updates the owning working-memory file (16.6) and the matching `todo/` file. A tick
+that is now wrong is amended, or moved to `done/` with the reason. The update log in `context.md`
+records what changed.
+
+**Return.** When the board is reachable again, the coordinating agent syncs the goal, the remaining
+items, and their status back onto the board, then records that sync in the update log. From that
+record, the board is again the status surface. The file set remains the record of the outage. It is
+not kept as a second live checklist.
+
+**Secrets.** These files hold none (16.2.2, standard 12). Where a secret is needed, an indirection
+names it.
+
+## 16.13 Review checklist
 
 - [ ] Every fact was placed by the three ordered questions (16.2), not by convenience.
 - [ ] No secret, transcript, volatile number, or unverified claim in any tier (16.2.2).
@@ -296,3 +363,13 @@ categories each surface is:
 - [ ] On closing an initiative: lessons promoted to tier 3, repository facts landed in tier 1, then
       archived (16.8).
 - [ ] Tier 2 files are not in `.temp/` and were not deleted as scratch (16.11).
+- [ ] While the board is unreachable, shared status is the 16.12 file handover, not chat and not
+      private memory.
+- [ ] `context.md` states the goal, the plan's source of truth, where status lives, and a tick list
+      whose every open bullet points at a `todo/` file. The update log is current.
+- [ ] Finished detail lives under `done/`. Nothing was deleted to shorten the tick list.
+- [ ] Each handover file has one writer, and writes are renamed into place (13.1, 13.2).
+- [ ] The handover root is durable and shared: not `.temp/`, not a rendered context file (14.4, 16.3).
+- [ ] No secrets in the handover (16.2.2).
+- [ ] When the board returned, status was synced back and the sync was recorded. The file set is the
+      outage record, not a second live checklist.
