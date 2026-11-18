@@ -13,9 +13,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
-## [0.10.0] — 2026-11-17
+## [0.11.0] — 2026-11-17
 
-> **Minor — `standards/VERSION` `0.9.0` → `0.10.0`.** A rule is added. Nothing written under `0.9.0` becomes invalid. The review checklist that was 16.12 is now 16.13.
+> **Minor — `standards/VERSION` `0.10.0` → `0.11.0`.** A rule is added. Nothing written under `0.10.0` becomes invalid. Lands after `0.10.0` (standard 17, PR #25); if this PR merges first, swap the two version numbers instead. The review checklist that was 16.12 is now 16.13.
 
 ### Added — `standards/`
 
