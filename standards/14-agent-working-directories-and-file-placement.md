@@ -19,6 +19,9 @@ every location below is expressed **relative to a single configured value, the d
   never written into a document, a script default, or a config file.
 - Every other path in this standard is relative to it: `${dev-root}/agents`, `${dev-root}/documents`,
   `${dev-root}/.temp`, `${dev-root}/repositories`.
+- A **deploy / runtime root** is a separate configured value, not a drive letter written into
+  standards. Source edits belong under `${dev-root}/repositories`; published bundles are not a
+  working directory ([`18`](./18-deploy-artifacts-are-not-source.md)).
 - **If the tree moves, one value changes and nothing else does.** That is the entire point, and it is why
   a standard about paths can comply with a standard forbidding paths.
 

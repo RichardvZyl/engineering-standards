@@ -178,7 +178,16 @@ repository moves. A provider's own store under the user's `AppData`/`Local` dire
 convention. `{session-id}` is unique per session — agents do not write into another session's
 directory — and a session's directory is deleted once its state is captured elsewhere.
 
-## 10.8 Review checklist
+## 10.8 Integration tip for publish is `fully-merged`
+
+Where a repository publishes a runnable service, the branch that publish reads is named
+**`fully-merged`**: the integration tip, ahead of feature branches, kept in sync with the
+remote. Feature work still happens in sibling worktrees; publish does not read a dirty WIP
+tree, the base `root/` checkout used as a workspace, or a live deploy tree. The deploy side
+of that rule — content-addressed releases, GENERATED banners, refuse-to-start — is
+[`18`](./18-deploy-artifacts-are-not-source.md).
+
+## 10.9 Review checklist
 
 - [ ] Base checkout is named `root` and sits inside the repository directory.
 - [ ] Every worktree is a sibling of `root`, not nested within it.

@@ -47,6 +47,7 @@ Drift you can see in a PR is a decision. Drift you cannot see is just entropy.
 | `14-agent-working-directories-and-file-placement.md` | Where an agent puts things: links into `agents/`, keepables in a worktree, scratch in `.temp/` |
 | `15-workflow-and-plan-pair.md` | Recurring work produces a workflow **and** a plan, and the workflow never references the plan |
 | `16-working-memory-protocol.md` | Three working-memory surfaces and the ordered rule that picks one; a snapshot is not working memory |
+| `18-deploy-artifacts-are-not-source.md` | Published runtime trees are release snapshots, not editable repos; publish-only path from `fully-merged` |
 
 ### The scripts
 
