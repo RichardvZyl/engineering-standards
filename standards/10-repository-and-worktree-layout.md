@@ -178,14 +178,28 @@ repository moves. A provider's own store under the user's `AppData`/`Local` dire
 convention. `{session-id}` is unique per session — agents do not write into another session's
 directory — and a session's directory is deleted once its state is captured elsewhere.
 
-## 10.8 Integration tip for publish is `fully-merged`
+## 10.8 Integration tip is `fully-merged` (create it when missing)
 
-Where a repository publishes a runnable service, the branch that publish reads is named
-**`fully-merged`**: the integration tip, ahead of feature branches, kept in sync with the
-remote. Feature work still happens in sibling worktrees; publish does not read a dirty WIP
-tree, the base `root/` checkout used as a workspace, or a live deploy tree. The deploy side
-of that rule — content-addressed releases, GENERATED banners, refuse-to-start — is
+The branch named **`fully-merged`** is the repository's **integration tip**: ahead of
+feature branches, kept in sync with the remote, and the default base for the bottom of a
+stacked PR chain ([`03`](./03-engineering-hygiene.md)). Where a repository publishes a
+runnable service, publish also reads this tip — not a dirty WIP tree, not the base `root/`
+checkout used as a workspace, and not a live deploy tree. The deploy side of that rule —
+content-addressed releases, GENERATED banners, refuse-to-start — is
 [`18`](./18-deploy-artifacts-are-not-source.md).
+
+**Create when missing.** On a repository that accepts feature branches or publish
+integration, if `fully-merged` does not exist on the remote, create it as a fast-forward of
+the remote default trunk (read the trunk's name from the remote; do not assume `main` or
+`master`), push it, and use it thereafter as the integration tip. Do not leave feature work
+targeting only an ad-hoc trunk name when the integration tip was never established.
+
+**Exemption — trunk-only repositories.** Repositories whose **recorded policy** forbids
+creating non-trunk local branches (meta, path-allowlist, or other non-project container
+repositories) do **not** create `fully-merged` and do **not** run stacked feature-branch
+workflows. Work there stays on the single allowed trunk, or is not done in that repository
+at all. The exemption is policy-driven and generic; it is not a licence to skip
+`fully-merged` on ordinary project repositories.
 
 ## 10.9 Review checklist
 

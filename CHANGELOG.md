@@ -13,6 +13,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+## [0.10.0] — 2026-11-18
+
+> **Minor — `standards/VERSION` `0.9.0` → `0.10.0`.** Existing rules are materially
+> tightened; nothing written under `0.9.0` becomes invalid.
+
+### Changed — `standards/`
+
+**Stacked PR merge order and `fully-merged` creation.** Standard `03` expands **Sequence
+PRs by containment** into operational stacked-PR rules: upper PR bases the branch below;
+merge oldest-first; rebase or retarget after the lower merges; do not close or delete an
+upper branch while it still has unique commits; failure modes include unclean revert and
+unique work falling off. Standard `10` §10.8 requires creating `fully-merged` as a
+fast-forward of the remote default trunk when it is missing on repositories that accept
+feature work or publish integration, and exempts trunk-only repositories whose recorded
+policy forbids non-trunk local branches. Planning note:
+[`docs/planning/2026-11-18-stacked-pr-merge-order.md`](./docs/planning/2026-11-18-stacked-pr-merge-order.md).
+
 ## [0.9.0] — 2026-11-18
 
 > Number **18** (not 17): sibling branch `standards/17-agent-execution` already claims `17-agent-execution.md` on origin; this line keeps the permanent-number rule collision-free.
