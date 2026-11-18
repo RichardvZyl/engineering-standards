@@ -13,6 +13,42 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+## [0.10.0] — 2026-11-18
+
+> **Minor — `standards/VERSION` `0.9.0` → `0.10.0`.** Existing rules are materially
+> tightened; nothing written under `0.9.0` becomes invalid.
+
+### Changed — `standards/`
+
+**Stacked PR merge order and `fully-merged` creation.** Standard `03` expands **Sequence
+PRs by containment** into operational stacked-PR rules: upper PR bases the branch below;
+merge oldest-first; rebase or retarget after the lower merges; do not close or delete an
+upper branch while it still has unique commits; failure modes include unclean revert and
+unique work falling off. Standard `10` §10.8 requires creating `fully-merged` as a
+fast-forward of the remote default trunk when it is missing on repositories that accept
+feature work or publish integration, and exempts trunk-only repositories whose recorded
+policy forbids non-trunk local branches. Planning note:
+[`docs/planning/2026-11-18-stacked-pr-merge-order.md`](./docs/planning/2026-11-18-stacked-pr-merge-order.md).
+
+## [0.9.0] — 2026-11-18
+
+> Number **18** (not 17): sibling branch `standards/17-agent-execution` already claims `17-agent-execution.md` on origin; this line keeps the permanent-number rule collision-free.
+
+
+> **Minor — `standards/VERSION` `0.8.0` → `0.9.0`.** A rule is added; nothing written under
+> `0.8.0` becomes invalid.
+
+### Added — `standards/`
+
+**Standard `18` — deploy artifacts are not source.** Earned when a published content-addressed
+release was edited in place because the deploy tree still looked like a TypeScript project.
+Names six conventions: **Deploy layout is not a repository**, **GENERATED banner and
+refuse-to-start**, **Read-only deploy tree**, **Config vs code separation**, **BUILD
+provenance**, and **Publish-only path**. Source stays under `${dev-root}/repositories` on
+`fully-merged`; runtimes consume minified, mildly obfuscated bundles with `BUILD.json` and a
+hard launcher refusal when the tree looks like source. ADR
+[`0001`](./docs/adr/0001-deploy-artifacts-are-not-source.md) records the options.
+
 ## [0.8.0] — 2026-10-26
 
 > **Minor — `standards/VERSION` `0.7.0` → `0.8.0`.** Standard 10 gains the session-state location, and standards 03, 07 and 10 now require the same worktree layout.

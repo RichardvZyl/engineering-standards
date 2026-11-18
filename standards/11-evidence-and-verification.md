@@ -95,8 +95,10 @@ before wiring it.**
 **Rule.** Any rendered, exported, cached or generated surface is **a snapshot at a moment**. Never treat
 it as authoritative, and never let a decision rest on it without re-checking the live source.
 
-This includes rendered context files, cached indexes, generated manifests, exported reports, and any file
-whose content was assembled from elsewhere. A snapshot's purpose is to save work, not to settle questions.
+This includes rendered context files, cached indexes, generated manifests, exported reports, published
+deploy trees (release snapshots under a `current` junction — see
+[`18`](./18-deploy-artifacts-are-not-source.md)), and any file whose content was assembled from
+elsewhere. A snapshot's purpose is to save work, not to settle questions.
 
 **Why this belongs in a standard rather than being obvious:** snapshots are attractive precisely because
 they are convenient and look current. A stale one is indistinguishable from a fresh one by inspection —
