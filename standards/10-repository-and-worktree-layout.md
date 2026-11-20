@@ -31,8 +31,9 @@ repositories/acme/payments/     <- one repository directory
 
 No worktree hides behind a container — not `worktrees/`, not a dotted `.worktrees/`, not
 `.agents/worktrees/`, never outside the repository directory. Worktrees are never nested inside
-the base, and the base is never the repository directory itself. Add one from the base:
-`git worktree add ../<worktree-name> -b <branch> origin/<trunk>`.
+the base, and the base is never the repository directory itself. The repository directory is named after the repository. Add one from the base, after the sync in 10.9:
+`git worktree add ../<worktree-name> -b <branch> origin/<default>`.
+That command leaves the branch checked out in `root/` unchanged. `<default>` is the remote's default branch.
 
 The one class of non-checkout item that may live at this level is **repository-level shared
 resources**: things that belong to the repository as a whole and must survive branch switches —
@@ -60,8 +61,11 @@ rejected because the base is not hidden bookkeeping — it is a real checkout an
 The base checkout exists to **track and synchronise with origin**. It is not a workspace.
 
 - Do not edit files in the base. Do not commit there.
-- The base holds the trunk branch and is kept fast-forward-only against origin.
-- Work happens in a worktree. A worktree is merged **into** the base before the worktree is pruned.
+- The branch checked out in `root/` is the repository's default branch. Read its name from the remote (`origin/HEAD`). It is sometimes `main` and sometimes `master`. Do not assume either name.
+- Do not switch branches in `root/`. `git switch`, `git checkout` of another branch, and `git checkout -b` are forbidden in the base checkout. Switching the base moves the checkout that parallel agents are using as the trunk.
+- A new branch exists only as a sibling worktree, created with `git worktree add ../<worktree-name> -b <branch> origin/<default>` from `root/` after the sync in 10.9. That command does not change the branch checked out in `root/`.
+- The base is kept fast-forward-only against `origin/<default>`.
+- Work happens in a worktree. A worktree is merged into the default branch before the worktree is pruned.
 - Genuinely unfinished work lives in a worktree beside the base, not as uncommitted changes in it.
 
 The reason is recoverability. If the base is always a clean fast-forward of origin, then "what does
@@ -79,19 +83,15 @@ worktree can be deleted without risking the only copy of the trunk.
 
 ## 10.5 Before creating a branch or a worktree, get the base current
 
-**Rule.** Never branch from a stale base. Before `git checkout -b` or `git worktree add`:
+**Rule.** Never branch from a stale base. Before `git worktree add`:
 
-1. **Fetch.** `git fetch origin --prune`.
-2. **Check for open pull requests.** If any are open against the trunk, **ask whether they
+1. **Sync first.** Section 10.9. `git fetch origin --prune`, then fast-forward `root/` with `git merge --ff-only origin/<default>`. If it will not fast-forward, stop.
+2. **Check for open pull requests.** If any are open against the default branch, **ask whether they
    should be merged first**, and wait for the answer. Do not open a branch that is about to
    be made obsolete by a merge, and do not assume the answer either way.
-3. **Bring the base checkout to the trunk's tip.** Fast-forward only — `git merge --ff-only
-   origin/<trunk>`. If it will not fast-forward, the base has local commits and that is a
-   separate decision, not something to paper over.
-4. **Branch from the remote ref, not from whatever is checked out.** `git checkout -b <name>
-   origin/<trunk>` or `git worktree add <path> -b <name> origin/<trunk>`.
+3. **Create the worktree from the remote ref.** From `root/`: `git worktree add ../<worktree-name> -b <name> origin/<default>`. Do not run `git switch`, `git checkout` of another branch, or `git checkout -b` in `root/`. The base stays on the default branch for every other agent working in parallel.
 
-**Read the trunk's name from the remote.** It is not always `main` and not always `master`;
+**Read the default branch's name from the remote.** It is not always `main` and not always `master`;
 assuming either mis-targets the base, the pull request, and every "is this unpushed?"
 comparison.
 
@@ -111,9 +111,9 @@ Getting the base to the most current point available makes the merge as small as
 which is the whole point. Do it once, cheaply, before the work starts.
 
 **Exception, stated so it is not abused.** If you deliberately need history as it was — to
-reproduce a bug, to bisect, to build against a released tag — branch from the exact ref you
-mean and **say so in the branch name or the pull request**. A deliberate old base is fine. An
-accidental one is the failure this rule prevents.
+reproduce a bug, to bisect, to build against a released tag — pass that ref to `git worktree add`
+and **say so in the branch name or the pull request**. `root/` stays on the default branch.
+A deliberate old base is fine. An accidental one is the failure this rule prevents.
 
 ## 10.6 A worktree writes into the main `.git`, and removing it is your obligation
 
@@ -178,7 +178,23 @@ repository moves. A provider's own store under the user's `AppData`/`Local` dire
 convention. `{session-id}` is unique per session — agents do not write into another session's
 directory — and a session's directory is deleted once its state is captured elsewhere.
 
-## 10.8 Review checklist
+## 10.9 Sync with origin before any create, read, update, or delete
+
+**Rule.** Before any create, read, update, or delete of repository content, sync `root/` with `origin`:
+
+1. `git fetch origin --prune`.
+2. Fast-forward only: `git merge --ff-only origin/<default>`, with `<default>` read from the remote.
+3. If `root/` will not fast-forward, stop. Do not start the create, read, update, or delete.
+
+A read of a stale base is a read of the wrong repository. The sync is part of the operation. Sibling worktrees are not a substitute for it: their checkouts are not the default branch.
+
+## 10.10 Exploring a repository reads `root/` only
+
+**Rule.** When exploring a repository — listing, searching, or reading files to learn what the repository is — read `root/` and ignore every sibling worktree.
+
+A sibling worktree is unmerged work. It is not the repository. Read or change a worktree only when the instruction names that worktree, or when the task is about the worktrees themselves, such as cleaning every working branch.
+
+## 10.11 Review checklist
 
 - [ ] Base checkout is named `root` and sits inside the repository directory.
 - [ ] Every worktree is a sibling of `root`, not nested within it.
@@ -189,12 +205,15 @@ directory — and a session's directory is deleted once its state is captured el
 - [ ] Agent session state lives under `.session/{provider}/{model}/{session-id}/` inside the
       repository directory — never as the canonical store in AppData/Local.
 - [ ] The base has no local commits and no uncommitted changes.
-- [ ] The base's trunk branch is a fast-forward of origin's trunk.
+- [ ] The branch checked out in `root/` is the remote's default branch, and it was not switched.
+- [ ] Before any create, read, update, or delete, `root/` was fetched and fast-forwarded to `origin/<default>`.
+- [ ] Exploration of the repository read `root/` only, unless the task named a worktree or was about the worktrees themselves.
+- [ ] The base's default branch is a fast-forward of origin's default branch.
 - [ ] Unfinished work is in a worktree, not in the base.
-- [ ] Before the branch or worktree was created: fetched, open pull requests against the trunk
-      raised for a merge decision, and the base fast-forwarded to the trunk's tip.
-- [ ] The branch was cut from the remote ref, and the trunk's name was read from the remote rather
-      than assumed.
+- [ ] Before the worktree was created: fetched, open pull requests against the default branch
+      raised for a merge decision, and the base fast-forwarded to that branch's tip.
+- [ ] The worktree was cut from the remote default branch with `git worktree add`, and that command did not change the branch checked out in `root/`.
+- [ ] The default branch's name was read from the remote rather than assumed.
 - [ ] Any deliberately old base is stated in the branch name or the pull request.
 - [ ] Every worktree whose work is merged or abandoned has been removed **and** pruned, leaving no
       entry under `.git/worktrees`.

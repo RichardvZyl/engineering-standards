@@ -90,7 +90,10 @@ they may contain placeholders and instructions to the reader. Mark placeholders 
   (merged or abandoned with a reason), and only then remove the worktree and prune.
   Scratch goes to `${dev-root}/.temp/<task>/` and is deleted when finished (standard 14.4). A
   worktree is a sibling of the base checkout — `<repo>/root/` and `<repo>/<worktree-name>/` sit
-  beside each other inside the repository folder (standard 10). The `.claude/` directory holds
+  beside each other inside the repository folder (standard 10). `root/` stays on the remote's
+  default branch (`main` or `master`); do not switch it. Sync `root/` with `origin` before any
+  create, read, update, or delete (10.9). Explore the repository from `root/` only, unless the
+  task names a worktree or is about the worktrees themselves (10.10). The `.claude/` directory holds
   only what the vendor harness requires (`settings.local.json`, per-repo `commands/`, `agents/`).
 - **Record known contradictions between planning documents** rather than silently resolving
   one in favour of the other. The contradiction is information.
