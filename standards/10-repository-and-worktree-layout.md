@@ -178,7 +178,36 @@ repository moves. A provider's own store under the user's `AppData`/`Local` dire
 convention. `{session-id}` is unique per session — agents do not write into another session's
 directory — and a session's directory is deleted once its state is captured elsewhere.
 
-## 10.8 Review checklist
+## 10.8 No code outside its own repository — ever
+
+**Rule (absolute).** No code may exist or run outside its own git repository, ever. That
+includes scripts, launchers, service source, configuration that a service executes, and build
+inputs. There are no exceptions for convenience:
+
+- **No staging folders.** A folder of "live" or "staged" copies that is not a checkout of the
+  repository that owns the code is forbidden, even if it is temporary.
+- **No source inside WSL, a virtual machine or a container.** A container or VM runs an image
+  built from a repository; it never holds the only copy of source, and nothing is edited inside
+  it.
+- **Services run from merged release builds of that repository.** A long-running service is
+  started from a build of the trunk (or a release tag), never from a worktree of an unmerged
+  branch and never from a hand-patched copy. A fix reaches a running service by being merged
+  and released, then redeployed.
+- **Third-party code is pinned, not copied.** A vendor binary or upstream project is consumed
+  from a pinned release or a clone of its own repository, and the pin is recorded in the
+  repository that deploys it.
+
+**Why.** Code outside its repository has no history, no review and no way back. A hand-patched
+copy drifts from every branch that claims to describe it, so nobody can say what is actually
+running, a fix made there is lost on the next deploy, and a rollback has nothing to roll back to.
+The cost of keeping it in the repository is one commit; the cost of not doing so is paid during
+an outage, when it is least affordable.
+
+**When you find code outside its repository,** do not edit it in place. Bring it into the owning
+repository on a worktree branch (adds and modifications only; do not delete the live copy), open
+it for review, and repoint the service to the release build only after that change is merged.
+
+## 10.9 Review checklist
 
 - [ ] Base checkout is named `root` and sits inside the repository directory.
 - [ ] Every worktree is a sibling of `root`, not nested within it.
@@ -200,3 +229,11 @@ directory — and a session's directory is deleted once its state is captured el
       entry under `.git/worktrees`.
 - [ ] No prune was run while a worktree's commits were unaccounted for, and nothing was removed
       without a verified archive.
+- [ ] No code exists or runs outside its own repository: no staging folder, no source held only
+      inside WSL, a VM or a container (10.8).
+- [ ] Every long-running service starts from a merged release build of its repository, not from
+      an unmerged worktree or a hand-patched copy (10.8).
+
+## A2A outage recovery exception
+
+All real work goes to A2A peers through the front door. Exception: when A2A is down, bots run the Grok CLI directly (E:\Tools\npm-global\grok.ps1), not through A2A, and only to restore A2A.

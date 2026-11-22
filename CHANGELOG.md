@@ -13,18 +13,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
-## [0.9.0] — 2026-11-05
-
-> **Minor — `standards/VERSION` `0.8.1` → `0.9.0`.** Standard 00 gains the structured architecture-brief output style and canonical example; standard 04 and the WTDR template require fully qualified category names plus claim glosses on every identifier citation.
+> **Minor (rule added).** `standards/VERSION` is left for the release that bundles this; draft #23 already claims `0.9.0`.
 
 ### Added — `standards/`
 
-- `standards/00-response-and-collaboration.md` — **Output structure and formatting**, plus a canonical example response: lead with the verdict or action taken (1–2 sentences, no conversational preamble or tool narration), link every file and symbol by basename/relative path with `#Lstart-Lend` line ranges, separate diagnosis/taxonomy/proof under `###` headings and Markdown tables, show concrete verification proof after every edit, fully qualify and gloss every planning or decision identifier, and close with a single crisp decision or next step.
-- `standards/04-documentation-layout.md` — **Citing identifiers in prose and chat — fully qualified name plus claim gloss**: every mention of an identifier (`W`, `T`, `D`, `PD`, `R`, `H`, `B`, `ADR NNNN`, or a document-declared category) must carry its fully qualified category name and a one-line claim gloss in brackets (e.g. `Workstream W5·Task T3 (<claim>)`, `Blocker B1 (<claim>)`, `Architecture Decision Record ADR 0004 (<claim>)`).
-
-### Changed — `templates/`
-
-- `templates/docs/planning/WTDR-item-prefix-convention.md` — added the `Fully qualified name` column and cited-form examples (`Workstream W1 (<claim>)`, `Task T1 (<claim>)`, `Decision D-01 (<claim>)`, `Risk R1 (<claim>)`, `Follow-up §H.6 (<claim>)`, `Blocker B1 (<claim>)`) to the category definition table.
+**No code outside its own repository — ever (`standards/10` 10.8).** An absolute rule: no code may exist or run outside its own git repository: no staging folders, and no source held only inside WSL, a VM or a container. Services run from merged release builds of that repository. Third-party code is pinned, not copied. The review checklist moves to 10.9 and gains two items for it. Earned when a live service chain was found running from an untracked staging folder and unmerged worktrees, so nobody could say which commit was serving.
 
 ## [0.8.1] — 2026-10-30
 
