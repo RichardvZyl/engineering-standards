@@ -1,0 +1,19 @@
+> Source: E:\Development\repositories\RichardvZyl\engineering-standards\wip-engineering-standards-root-loose-state\.perseus\pack.yaml | Branch: wip/engineering-standards-root-loose-state | Commit: 204ebdb 2026-09-05 | Status: committed on wip/engineering-standards-root-loose-state | Copied: 2026-11-06 07:57 SAST (working copy - edit the source, not this file)
+
+version: 1
+name: generic-context
+profile: generic
+trust_profile: balanced
+renders:
+- name: default
+  source: .perseus/context.md
+  output: live-context.md
+  assistant: generic
+synthesis:
+- name: project-status
+  question: What is the current project status and next allowable action?
+  sources:
+  - ROADMAP.md
+  - HANDOFF.md
+  - README.md
+  enabled: false

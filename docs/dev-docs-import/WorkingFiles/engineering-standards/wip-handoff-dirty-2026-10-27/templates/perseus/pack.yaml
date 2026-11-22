@@ -1,0 +1,22 @@
+> Source: E:\Development\repositories\RichardvZyl\engineering-standards\wip-handoff-dirty-2026-10-27\templates\perseus\pack.yaml | Branch: wip/handoff-dirty-2026-10-27 | Commit: 3c5dcff 2026-09-27 | Status: committed on wip/handoff-dirty-2026-10-27 | Copied: 2026-11-06 07:57 SAST (working copy - edit the source, not this file)
+
+# SEEDED ONCE from engineering-standards. Optional seed. Delete if unused.
+# Not required by a standards sync. Copy to .perseus/pack.yaml only if the
+# host has Perseus, then edit.
+version: 1
+name: <PROJECT>
+profile: generic
+trust_profile: balanced
+renders:
+  - name: default
+    source: .perseus/context.md
+    output: live-context.md
+    assistant: generic
+synthesis:
+  - name: project-status
+    question: What is the current project status and next allowable action?
+    sources:
+      - ROADMAP.md
+      - HANDOFF.md
+      - README.md
+    enabled: false
