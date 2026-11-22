@@ -112,7 +112,28 @@ Where agents may run on more than one platform against the same tree:
   Keep the working-memory directory shallow and its filenames bounded.
 - **Line endings.** Working-memory files are text and are subject to standard 12's line-ending rule.
 
-## 13.6 Review checklist
+## 13.6 Running tasklist
+
+**Rule.** For any work larger than one prompt, the agent keeps a single tasklist stating the
+remaining work, and updates it in place as each step changes state.
+
+**Why.** Completion and findings do not arrive on prompt boundaries. A tasklist updated only at the
+end is stale at every interruption point, and the next actor to read it either repeats finished work
+or trusts an item still marked "to do" that is already done. Ticking an item the moment it completes
+is the whole mechanism: the file is the live record of what remains, and that is what makes
+interrupted work recoverable without redoing it — the working-memory form of the same recoverability
+standard 17 gives to long-running processes.
+
+**Practice.**
+
+- One tasklist per piece of work; the agent that owns it is its only writer (13.1).
+- State each item as a box: `[x]` done, `[ ]` not started, `[~]` partial, `[!]` blocked.
+- Tick an item when it completes, not batched at the end, and record a reason on `[!]`.
+- Record the repository HEAD at last save, so a fresh instance can resume without re-deriving state.
+- Keep the tasklist where the next actor will find it (the repository, or the agreed per-estate
+  location), not in scratch that dies with the session.
+
+## 13.7 Review checklist
 
 - [ ] Every working-memory file has exactly one writer, identified in its name along with its
       orchestrator-issued session identifier.
@@ -122,3 +143,4 @@ Where agents may run on more than one platform against the same tree:
 - [ ] Every invalidated statement has been retracted in place, with the reason, before work continued.
 - [ ] Generated context surfaces are neither written to as working memory nor read as authored.
 - [ ] Agent identifiers differ by more than case, avoid reserved names, and keep paths short.
+- [ ] A running tasklist exists for multi-step work and is updated in place as each step completes.

@@ -13,6 +13,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+## [0.10.0] — 2026-11-22
+
+> **Minor — `standards/VERSION` `0.9.0` → `0.10.0`.** Standard 13 gains the running-tasklist rule.
+
+### Added — `standards/`
+
+- `standards/13-concurrent-agents-and-working-memory.md` — **Running tasklist (13.6):** an agent keeps a single tasklist for work larger than one prompt and updates it in place as each step completes, so interrupted work is recoverable without redoing it.
+
 ## [0.9.0] — 2026-11-05
 
 > **Minor — `standards/VERSION` `0.8.1` → `0.9.0`.** Standard 00 gains the structured architecture-brief output style and canonical example; standard 04 and the WTDR template require fully qualified category names plus claim glosses on every identifier citation.
