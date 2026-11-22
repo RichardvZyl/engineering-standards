@@ -81,20 +81,23 @@ same commit or PR.
 - Identifiers are **permanent** — never reused, never renumbered.
 - Ordinals record **insertion order**, not priority. Priority is a column.
 - A downstream doc **cites** the owning doc's identifier; it never mints a second scheme.
+- Every citation in prose, commit notes, handoffs, or chat uses the **fully qualified category
+  name** plus a **one-line claim gloss in brackets** on every mention (e.g. `Workstream W5·Task T3
+  (<claim>)`, `Blocker B1 (<claim>)`, `Architecture Decision Record ADR 0004 (<claim>)`).
 
 ## 4. Category definitions
 
 Declare these in the owning planning doc, near the items, so the meaning is never only in
 someone's head.
 
-| Category | Level | Meaning | Typical IDs |
-|---|---|---|---|
-| `W` | Top | **Workstream** — a named scope of related work with its own acceptance sketch | `W1`, `W2`, … |
-| `T` | Child of `W` | **Task** — an executable, independently verifiable unit of work inside a workstream | `T1`, `T2`, … or `W3·T1` |
-| `D` | Cross-cutting | **Decision / divergence** — a ruling that changes or settles an earlier position | `D-01`, `D-02`, … |
-| `R` | Cross-cutting | **Risk / assumption** — a named threat or unverified premise that gates or constrains items | `R1`, `R2`, … |
-| `H` | Cross-cutting (register) | **Follow-up / consequence** — an open question, consequence, or issue raised during a session; lives in a register doc grouped by topic sections | `§H.1`, `§H.6`, `§J.13`, … |
-| `B` | Any (always above blocked items) | **Blocker** — a dedicated hard gate whose only job is to block named items until cleared. Prefer `B` when the gate is not already a `D`/`H`/`R`; otherwise put `blocks:` on that existing item | `B1`, `B2`, … or `W2·B1` |
+| Category | Fully qualified name | Level | Meaning | Typical IDs & cited form |
+|---|---|---|---|---|
+| `W` | **Workstream** | Top | A named scope of related work with its own acceptance sketch | `Workstream W1 (<claim>)`, `Workstream W2 (<claim>)` |
+| `T` | **Task** | Child of `W` | An executable, independently verifiable unit of work inside a workstream | `Task T1 (<claim>)`, `Workstream W3·Task T1 (<claim>)` |
+| `D` | **Decision / divergence** | Cross-cutting | A ruling that changes or settles an earlier position | `Decision D-01 (<claim>)`, `Proposed Decision PD-02 (<claim>)` |
+| `R` | **Risk / assumption** | Cross-cutting | A named threat or unverified premise that gates or constrains items | `Risk R1 (<claim>)`, `Risk R2 (<claim>)` |
+| `H` | **Follow-up / consequence** | Cross-cutting (register) | An open question, consequence, or issue raised during a session; lives in a register doc grouped by topic sections | `Follow-up §H.1 (<claim>)`, `Follow-up §H.6 (<claim>)` |
+| `B` | **Blocker** | Any (always above blocked items) | A dedicated hard gate whose only job is to block named items until cleared. Prefer `B` when the gate is not already a `D`/`H`/`R`; otherwise put `blocks:` on that existing item | `Blocker B1 (<claim>)`, `Workstream W2·Blocker B1 (<claim>)` |
 
 > **`PD` (Proposed Decision)** is a common variant of `D` used while a decision is still
 > under discussion. When ruled, a `PD` either graduates to `D` or is recorded as ruled

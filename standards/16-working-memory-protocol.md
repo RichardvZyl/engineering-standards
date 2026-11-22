@@ -97,7 +97,8 @@ is in it is whatever its owners last wrote.
 
 ## 16.4 Single writer per file
 
-**Each agent owns exactly one working file and writes only that file.** Standard 13 owns the
+**Each agent owns exactly one working file, plus the matching `completed/` drain file (16.5), and
+writes only those.** Standard 13 owns the
 mechanism; this section states what it means for these three surfaces and defers to 13 on the
 details rather than restating them.
 
@@ -116,7 +117,7 @@ sees the old content or the new one, never a mixture — and it holds only withi
 which is why the temporary never crosses a boundary.
 
 **Read freely, write only your own.** An agent reads every file in the directory to understand the
-whole initiative, and writes one. **Reconciliation is a reader's job** (13.1): a reader merges what
+whole initiative, and writes only its own. **Reconciliation is a reader's job** (13.1): a reader merges what
 it finds across files, and writers never merge. Anything that must be *agreed* between agents goes
 through the orchestrator or a durable store, not through a file two agents both write.
 
@@ -285,8 +286,8 @@ categories each surface is:
 - [ ] Every fact was placed by the three ordered questions (16.2), not by convenience.
 - [ ] No secret, transcript, volatile number, or unverified claim in any tier (16.2.2).
 - [ ] No agent wrote the rendered context file; it surfaces agent state by pointer only (16.3).
-- [ ] Each agent wrote exactly one working file, named from its identity and an orchestrator-issued
-      session nonce, never a timestamp (16.4).
+- [ ] Each agent wrote exactly one working file and at most its matching `completed/` drain file,
+      both named from its identity and an orchestrator-issued session nonce, never a timestamp (16.4).
 - [ ] The file accumulated across prompts; completed items drained with drop reasons recorded (16.5).
 - [ ] Every finding that changed the remaining work produced an amendment or a close-out, with a
       reason — nothing left silently wrong (16.6).

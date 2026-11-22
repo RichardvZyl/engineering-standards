@@ -45,6 +45,7 @@ What was verified before planning. Standards text is from the checkout that matc
 ```yaml
 - id: S1
   title: State in standard 08 that canonical-doc drift fails the build
+  status: pending
   files:
     - standards/08-keeping-documents-current.md
   dependsOn: []
@@ -54,6 +55,7 @@ What was verified before planning. Standards text is from the checkout that matc
 
 - id: S2
   title: State in standard 03 how verification is selected and that it must not dirty the tree
+  status: pending
   files:
     - standards/03-engineering-hygiene.md
   dependsOn: []
@@ -63,6 +65,7 @@ What was verified before planning. Standards text is from the checkout that matc
 
 - id: S3
   title: Point the seeded agent file at task routes and at pin files
+  status: pending
   files:
     - templates/AGENTS.md.template
   dependsOn: [S1]
@@ -72,6 +75,7 @@ What was verified before planning. Standards text is from the checkout that matc
 
 - id: S4
   title: Require a plan that implements a specification to name that specification
+  status: pending
   files:
     - standards/04-documentation-layout.md
   dependsOn: []
@@ -81,31 +85,42 @@ What was verified before planning. Standards text is from the checkout that matc
 
 - id: S5
   title: Cut 0.9.0 and prove the standards repo still verifies
+  status: pending
   files:
     - standards/VERSION
     - CHANGELOG.md
-  dependsOn: [S1, S2, S4]
-  acceptance: standards/VERSION is 0.9.0. CHANGELOG has a dated 0.9.0 block and an empty Unreleased section. pwsh ./scripts/Test-NoProprietaryLeak.ps1 and pwsh ./scripts/Test-StandardsIntegrity.ps1 both exit 0. The verify-standards workflow is green on the pull request.
+  dependsOn: [S1, S2, S4, S6]
+  acceptance: standards/VERSION is 0.9.0. CHANGELOG has a dated 0.9.0 block and an empty Unreleased section. pwsh ./scripts/Test-NoProprietaryLeak.ps1 and pwsh ./scripts/Test-StandardsIntegrity.ps1 both exit 0, with S6's check included. The verify-standards workflow is green on the pull request.
   rollback: Revert the version and changelog commit.
   checkpoint: true
+
+- id: S6
+  title: Make the integrity script fail on the drift surfaces this repository has
+  status: pending
+  files:
+    - scripts/Test-StandardsIntegrity.ps1
+  dependsOn: [S1]
+  acceptance: Test-StandardsIntegrity.ps1 gains a numbered check, listed in its .DESCRIPTION, that fails when a script path cited in this repository's markdown outside templates/ does not resolve. A temporary broken citation makes the script exit 1, and removing it restores exit 0. No pin-file check is added, because this repository has no pin file. The existing relative-link and VERSION checks are unchanged.
+  rollback: Revert the script edit.
+  checkpoint: false
 ```
 
 ## Order
 
 ```
-S1 ─┐
-S2 ─┼→ S5
-S4 ─┘
+S1 ──→ S6 ─┐
+S2 ────────┼→ S5
+S4 ────────┘
 S3 ──→ (after S1, no version dependency beyond being in the same pull request)
 
-checkpoints: after S1 (the new requirement is the contract), after S5 (version and both local scripts)
+checkpoints: after S1 (the new requirement is the contract), after S5 (version and both local scripts, including S6's check)
 ```
 
 S3 is seeded once and is not under `standards/`, so it does not by itself force the version bump. It still belongs in the same pull request so the template and the rule ship together.
 
 ## Verification
 
-- **Per checkpoint:** After S1, re-read standard 08 against `scripts/Test-StandardsIntegrity.ps1` and confirm the new sentence does not claim a check this repository does not have, unless S5's scripts grew that check. After S5, both PowerShell scripts exit 0.
+- **Per checkpoint:** After S1, re-read standard 08 against `scripts/Test-StandardsIntegrity.ps1` and confirm the new sentence does not claim a check this repository does not have, unless S6 added that check. After S5, both PowerShell scripts exit 0.
 - **End to end:** A pull request into `main` changes only the files listed above. `verify-standards` is green. A reader can point at standard 08 for "drift fails" and standard 03 for "the gate is selected from the diff".
 - **Regression risk:** The vendoring header and the leak guard. Integrity already scans every `standards/**` markdown link. A new internal link that does not resolve fails S5.
 
@@ -132,7 +147,7 @@ S3 is seeded once and is not under `standards/`, so it does not by itself force 
 
 ### Q2 — Does this repository grow a new checker, or only the rule?
 
-- **Affects:** S1, S5
+- **Affects:** S1, S5, S6
 - **Status:** recommended: rule in the standard, extend the existing script only for surfaces this repository has
 - **Options:**
 
@@ -142,7 +157,7 @@ S3 is seeded once and is not under `standards/`, so it does not by itself force 
   | B — Ship a language-neutral validator in this repo for downstream to call | One implementation. | This repo would grow a tool it does not need, and downstream would take a dependency on it. Violates "prefer the platform". | Removing a consumed script is a breaking change. High. |
   | C — Prose only, no new assertion here | Smallest diff. | Standard 03 says a document-only convention erodes. This repo would state a rule it does not keep. | Adding the assertion later is easy. The credibility cost is paid until then. |
 
-- **Plan impact per option:** A keeps S5 as script-green plus a changelog. B adds a `scripts/` tool and a template snippet, and likely pushes the bump to `0.9.0` still, but the blast radius includes every future consumer. C drops script edits from S5.
+- **Plan impact per option:** A keeps S6 as the script assertion and S5 as script-green plus a changelog. B replaces S6 with a `scripts/` tool and a template snippet, and likely pushes the bump to `0.9.0` still, but the blast radius includes every future consumer. C drops S6.
 - **Nuances / edge cases that bite here:** `Test-StandardsIntegrity.ps1` already checks relative links under `standards/` and skips `templates/`. Do not "fix" template links. Do not require a Rust or Node pin in a repository that has neither.
 - **If we choose wrong:** B couples every consuming repo to this repo's script layout. C makes the new paragraph an example of the defect it describes. You find out when the next standards edit restates a version and CI stays green.
 - **Recommendation:** A. The reference implementation is the script this repo already runs.
@@ -166,7 +181,7 @@ S3 is seeded once and is not under `standards/`, so it does not by itself force 
 
 ### Q4 — Word budgets and duplicate-paragraph checks?
 
-- **Affects:** none of S1–S5 unless this is promoted
+- **Affects:** none of S1–S6 unless this is promoted
 - **Status:** deferred. Safe because standards 06 and 08 already forbid a second copy of a rule, and a 25-word detector false-positives on repeated legal text.
 - **Options:**
 

@@ -37,6 +37,29 @@ That single rule prevents the failure this standard exists for. Everything below
 - **`<group>`** — optional prefix for a batch, phase or wave (`W5·S2`). Use it only when more
   than one batch is in flight; a prefix that is always the same is noise.
 
+### Citing identifiers in prose and chat — fully qualified name plus claim gloss
+
+Whenever an identifier — `W`, `T`, `D`, `PD`, `R`, `H`, `B`, `ADR NNNN`, or a document-declared
+category — is written in prose, commit notes, handoffs, or chat responses, **precede it with its
+fully qualified category name** and **follow it immediately with a one-line claim gloss in
+brackets**, on every mention (not only the first):
+
+```
+Workstream W5·Task T3 (migrate session state out of vendor AppData) is gated by Blocker B1 (verify base checkout is clean).
+Decision D-01 (use Snapshot isolation for balance reads) supersedes Proposed Decision PD-01 (use Read Committed with row locks).
+Architecture Decision Record ADR 0004 (mutex is an admission rule, not a dependency edge) constrains the scheduler.
+Follow-up §H.6 (confirm retention window for archived ledger partitions) remains open.
+```
+
+An identifier is a pointer. A reader who does not hold the owning document open — a later
+session, another model, a reviewer on a phone — gets nothing from a bare `B1` or `R7` (especially
+where category letters are overloaded across documents) and everything from the fully qualified
+category name plus the claim gloss.
+
+Keep the gloss to the **claim**, not a restatement of the category: *"verify base checkout is
+clean"*, not *"the first blocker in the plan"*. If you cannot state the claim in a clause, look up
+the item in its owning document before citing it.
+
 ### Rules
 
 **An identifier is permanent.** Once written down it is never reused for a different item and
