@@ -13,41 +13,42 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
-## [0.10.0] — 2026-11-18
+## [0.10.0] — 2026-11-22
 
-> **Minor — `standards/VERSION` `0.9.0` → `0.10.0`.** Existing rules are materially
-> tightened; nothing written under `0.9.0` becomes invalid.
+> **Minor — `standards/VERSION` `0.9.0` → `0.10.0`.** Standard `18` is added; standards `03`, `07`, `10`, `11` and `14` gain operational stacked-PR merge-order rules; standard `10` §10.8 adds "no code outside its own repository, ever"; and an A2A-outage recovery exception is recorded for the Grok CLI.
 
 ### Changed — `standards/`
 
-**Stacked PR merge order and `fully-merged` creation.** Standard `03` expands **Sequence
-PRs by containment** into operational stacked-PR rules: upper PR bases the branch below;
-merge oldest-first; rebase or retarget after the lower merges; do not close or delete an
-upper branch while it still has unique commits; failure modes include unclean revert and
-unique work falling off. Standard `10` §10.8 requires creating `fully-merged` as a
-fast-forward of the remote default trunk when it is missing on repositories that accept
-feature work or publish integration, and exempts trunk-only repositories whose recorded
-policy forbids non-trunk local branches. Planning note:
-[`docs/planning/2026-11-18-stacked-pr-merge-order.md`](./docs/planning/2026-11-18-stacked-pr-merge-order.md).
+**Stacked PR merge order and `fully-merged` creation.** Standard `03` expands **Sequence PRs by containment** into operational stacked-PR rules: upper PR bases the branch below; merge oldest-first; rebase or retarget after the lower merges; do not close or delete an upper branch while it still has unique commits; failure modes include unclean revert and unique work falling off. Standard `10` §10.8 requires creating `fully-merged` as a fast-forward of the remote default trunk when it is missing on repositories that accept feature work or publish integration, and exempts trunk-only repositories whose recorded policy forbids non-trunk local branches. Planning note: [`docs/planning/2026-11-18-stacked-pr-merge-order.md`](./docs/planning/2026-11-18-stacked-pr-merge-order.md).
 
-## [0.9.0] — 2026-11-18
-
-> Number **18** (not 17): sibling branch `standards/17-agent-execution` already claims `17-agent-execution.md` on origin; this line keeps the permanent-number rule collision-free.
-
-
-> **Minor — `standards/VERSION` `0.8.0` → `0.9.0`.** A rule is added; nothing written under
-> `0.8.0` becomes invalid.
+**Standard `10` §10.8 — no code outside its own repository, ever.** A repository's runnable code lives only in that repository; a long-running service starts from a merged release build of its repository, not from an unmerged worktree or a hand-patched copy. Recorded exception: when A2A is down, bots run the Grok CLI directly (`E:\Tools\npm-global\grok.ps1`) rather than through A2A, and only to restore A2A.
 
 ### Added — `standards/`
 
-**Standard `18` — deploy artifacts are not source.** Earned when a published content-addressed
-release was edited in place because the deploy tree still looked like a TypeScript project.
-Names six conventions: **Deploy layout is not a repository**, **GENERATED banner and
-refuse-to-start**, **Read-only deploy tree**, **Config vs code separation**, **BUILD
-provenance**, and **Publish-only path**. Source stays under `${dev-root}/repositories` on
-`fully-merged`; runtimes consume minified, mildly obfuscated bundles with `BUILD.json` and a
-hard launcher refusal when the tree looks like source. ADR
-[`0001`](./docs/adr/0001-deploy-artifacts-are-not-source.md) records the options.
+> Number **18** (not 17): sibling branch `standards/17-agent-execution` already claims `17-agent-execution.md` on origin; this line keeps the permanent-number rule collision-free.
+
+**Standard `18` — deploy artifacts are not source.** Earned when a published content-addressed release was edited in place because the deploy tree still looked like a TypeScript project. Names six conventions: **Deploy layout is not a repository**, **GENERATED banner and refuse-to-start**, **Read-only deploy tree**, **Config vs code separation**, **BUILD provenance**, and **Publish-only path**. Source stays under `${dev-root}/repositories` on `fully-merged`; runtimes consume minified, mildly obfuscated bundles with `BUILD.json` and a hard launcher refusal when the tree looks like source. ADR [`0001`](./docs/adr/0001-deploy-artifacts-are-not-source.md) records the options.
+
+## [0.9.0] — 2026-11-05
+
+> **Minor — `standards/VERSION` `0.8.1` → `0.9.0`.** Standard 00 gains the structured architecture-brief output style and canonical example; standard 04 and the WTDR template require fully qualified category names plus claim glosses on every identifier citation.
+
+### Added — `standards/`
+
+- `standards/00-response-and-collaboration.md` — **Output structure and formatting**, plus a canonical example response: lead with the verdict or action taken (1–2 sentences, no conversational preamble or tool narration), link every file and symbol by basename/relative path with `#Lstart-Lend` line ranges, separate diagnosis/taxonomy/proof under `###` headings and Markdown tables, show concrete verification proof after every edit, fully qualify and gloss every planning or decision identifier, and close with a single crisp decision or next step.
+- `standards/04-documentation-layout.md` — **Citing identifiers in prose and chat — fully qualified name plus claim gloss**: every mention of an identifier (`W`, `T`, `D`, `PD`, `R`, `H`, `B`, `ADR NNNN`, or a document-declared category) must carry its fully qualified category name and a one-line claim gloss in brackets (e.g. `Workstream W5·Task T3 (<claim>)`, `Blocker B1 (<claim>)`, `Architecture Decision Record ADR 0004 (<claim>)`).
+
+### Changed — `templates/`
+
+- `templates/docs/planning/WTDR-item-prefix-convention.md` — added the `Fully qualified name` column and cited-form examples (`Workstream W1 (<claim>)`, `Task T1 (<claim>)`, `Decision D-01 (<claim>)`, `Risk R1 (<claim>)`, `Follow-up §H.6 (<claim>)`, `Blocker B1 (<claim>)`) to the category definition table.
+
+## [0.8.1] — 2026-10-30
+
+> **Patch — `standards/VERSION` `0.8.0` → `0.8.1`.** Wording only; nothing that was compliant under `0.8.0` stops being compliant.
+
+### Fixed — `standards/`
+
+**One writer per file, not one file per agent.** `standards/13` 13.1 and `standards/16` 16.4 said each agent writes *exactly one* working-memory file, while 16.5 drains closed items into a second, per-agent file under `completed/` and 16.8 already said every file has exactly one writer, `completed/` included. The rule was always single ownership. 13.1 now states it as one writer per file and names an agent's own files (its working file and any paired drain file). 16.4 and the 16.12 checklist now allow the working file plus its matching `completed/` drain file, both named from the agent's identity and session nonce.
 
 ## [0.8.0] — 2026-10-26
 
