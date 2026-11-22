@@ -13,6 +13,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+## [0.10.0] — 2026-11-20
+
+> **Minor — `standards/VERSION` `0.9.0` → `0.10.0`.** Standard 10 now forbids switching the branch checked out in `root/`, requires a sync with `origin` before any create, read, update, or delete, and limits exploration of a repository to `root/` unless the task is about the worktrees.
+
+### Added — `standards/`
+
+- `standards/10-repository-and-worktree-layout.md` — **Sync `root/` with `origin` before any create, read, update, or delete** (10.9). Fetch, then fast-forward the base to the remote's default branch. Stop if it will not fast-forward. A stale base is the wrong repository.
+- `standards/10-repository-and-worktree-layout.md` — **Exploring a repository reads `root/` only** (10.10). Sibling worktrees are unmerged work. Read one only when the instruction names it, or when the task is about the worktrees themselves, such as cleaning every working branch.
+
+### Changed — `standards/`
+
+- `standards/10-repository-and-worktree-layout.md` — **`root/` stays on the default branch.** The branch checked out in the base is the remote's default branch (`main` or `master`; read it from `origin/HEAD`). `git switch`, `git checkout` of another branch, and `git checkout -b` are forbidden in `root/`. A new branch is a sibling worktree created from `origin/<default>` after the sync, and that command does not change the branch in the base. The repository directory is named after the repository.
+- `standards/03-engineering-hygiene.md` — the worktree bullet now points at those three rules instead of leaving `git checkout -b` available in the base.
+
 ## [0.9.0] — 2026-11-05
 
 > **Minor — `standards/VERSION` `0.8.1` → `0.9.0`.** Standard 00 gains the structured architecture-brief output style and canonical example; standard 04 and the WTDR template require fully qualified category names plus claim glosses on every identifier citation.
