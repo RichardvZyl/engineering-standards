@@ -13,6 +13,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+## [0.10.0] — 2026-11-22
+
+> **Minor — `standards/VERSION` `0.9.0` → `0.10.0`.** Standard 03 gains a "Deletion is recoverable" rule: permanent deletion is not a default action; files and directories go to the platform's recoverable-destruction facility (Recycle Bin / Trash) unless the change is explicitly requested as unrecoverable and recorded.
+
+### Changed — `standards/`
+
+- `standards/03-engineering-hygiene.md` — added "Deletion is recoverable": preferred deletion goes through the platform's recoverable-destruction facility; force-rm is not a default; agent harnesses should block permanent-delete commands and route deletion through a recoverable helper.
+
 ## [0.9.0] — 2026-11-05
 
 > **Minor — `standards/VERSION` `0.8.1` → `0.9.0`.** Standard 00 gains the structured architecture-brief output style and canonical example; standard 04 and the WTDR template require fully qualified category names plus claim glosses on every identifier citation.
