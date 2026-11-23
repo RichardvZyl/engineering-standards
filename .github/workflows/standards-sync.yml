@@ -42,6 +42,10 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v4
+        with:
+          # Build from the default branch even on a manual dispatch from another branch, so the
+          # sync PR never carries that branch's unrelated commits.
+          ref: ${{ github.event.repository.default_branch }}
 
       - name: Fetch the sync script from upstream
         run: |

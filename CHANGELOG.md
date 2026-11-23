@@ -21,6 +21,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
   now uses `git push --force`, which is safe because the branch is bot-owned and rebuilt from
   the default branch on every run, and adds a `concurrency` group so two runs cannot race the
   force-push.
+- **`.github/workflows/standards-sync.yml` template:** the checkout now pins
+  `ref: ${{ github.event.repository.default_branch }}`. A manual dispatch from a feature branch
+  used to build `standards-sync` from that branch, so the standards-only sync PR carried its
+  unrelated commits.
 
 ## [0.10.0] — 2026-11-22
 
