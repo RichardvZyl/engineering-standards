@@ -13,6 +13,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+### Fixed — repository (not vendored; `standards/VERSION` unchanged)
+
+- **`.github/workflows/standards-sync.yml` template:** the push step used
+  `git push --force-with-lease` against a `standards-sync` ref the checkout never fetched, so
+  every run after the first was rejected and downstream copies stopped receiving sync PRs. It
+  now uses `git push --force`, which is safe because the branch is bot-owned and rebuilt from
+  the default branch on every run, and adds a `concurrency` group so two runs cannot race the
+  force-push.
+
 ## [0.10.0] — 2026-11-22
 
 > **Minor — `standards/VERSION` `0.9.0` → `0.10.0`.** Standard `18` is added; standards `03`, `07`, `10`, `11` and `14` gain operational stacked-PR merge-order rules; standard `10` §10.8 adds "no code outside its own repository, ever"; and an A2A-outage recovery exception is recorded for the Grok CLI.

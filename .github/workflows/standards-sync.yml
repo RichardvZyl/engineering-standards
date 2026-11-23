@@ -28,6 +28,12 @@ permissions:
 env:
   UPSTREAM_REPO: RichardvZyl/engineering-standards
   SYNC_BRANCH: standards-sync
+# One sync at a time per repository: the push below is a --force, so an overlapping run waits
+# rather than racing it. GitHub keeps only the newest pending run per group; a manual dispatch
+# replaced while waiting must be re-dispatched.
+concurrency:
+  group: standards-sync
+  cancel-in-progress: false
 
 jobs:
   sync:
@@ -83,7 +89,9 @@ jobs:
           TITLE="Standards sync: ${FROM_VERSION} → ${TO_VERSION}"
 
           git commit -m "$TITLE" -m "$SUMMARY"
-          git push --force-with-lease origin "$SYNC_BRANCH"
+          # The sync branch is bot-owned and rebuilt from the default branch on every run, and the
+          # checkout never fetches it, so --force-with-lease has no lease to check and is rejected.
+          git push --force origin "$SYNC_BRANCH"
 
           BODY=$(cat <<EOF
           Vendored \`standards/\` has fallen behind \`${UPSTREAM_REPO}\`.
@@ -117,4 +125,4 @@ jobs:
 
       - name: Report no drift
         if: steps.sync.outputs.has_drift != 'true'
-        run: echo "standards/ is current at ${{ steps.sync.outputs.to_version }}. No PR needed."
+        run: echo "standards/ is current at ${{ steps.sync.outputs.to_version }}. No PR needed."
