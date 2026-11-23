@@ -1,5 +1,9 @@
 # AGENTS.md — working in this repository
 
+## Branching location
+
+Branching is ONLY allowed from a git repo under E:\Development\repositories\RichardvZyl, and ONLY as a new worktree next to that repo's root\ (E:\Development\repositories\RichardvZyl\{repo}\{new-worktree}). Never branch inside root\ itself, never branch anywhere else.
+
 This file governs work on **`engineering-standards` itself**. It is not the file a consuming
 repo gets; that one is [`templates/AGENTS.md.template`](./templates/AGENTS.md.template).
 
