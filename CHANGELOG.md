@@ -18,7 +18,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 - **`.github/workflows/standards-sync.yml` template:** the push step used
   `git push --force-with-lease` against a `standards-sync` ref the checkout never fetched, so
   every run after the first was rejected and downstream copies stopped receiving sync PRs.
-  Each version now gets its own branch, `standards-sync/<to-version>`, pushed once and never
+  Each version now gets its own branch, `standards-sync-<to-version>`, pushed once and never
   force-pushed, so the workflow no longer rewrites published history (standard 03). A rerun
   for the same version reuses the branch and fails if its `standards/` differs. A closed PR
   for that version is not reopened. A newer version's PR closes the older open sync PR and
