@@ -142,15 +142,20 @@ jobs:
           fi
 
           # An open sync PR for an older version is superseded: close it, and keep its branch.
-          # A newer version's PR is left alone, so dispatching an older ref cannot close it.
+          # A newer version's PR is left alone, so dispatching an older ref cannot close it. Only
+          # plain MAJOR.MINOR.PATCH versions are compared; any other branch name is left alone.
+          SEMVER='^[0-9]+\.[0-9]+\.[0-9]+$'
           CURRENT=$(gh pr list --head "$SYNC_BRANCH" --state open --json number,isCrossRepository \
             --jq '[.[] | select(.isCrossRepository | not)][0].number // empty')
-          if [ -n "$CURRENT" ]; then
+          if [ -n "$CURRENT" ] && [[ "$TO_VERSION" =~ $SEMVER ]]; then
             gh pr list --state open --limit 1000 --json number,headRefName,isCrossRepository \
               --jq ".[] | select(.isCrossRepository | not) | select(.headRefName == \"${SYNC_BRANCH_PREFIX}\" or (.headRefName | startswith(\"${SYNC_BRANCH_PREFIX}-\"))) | select(.headRefName != \"${SYNC_BRANCH}\") | \"\(.number) \(.headRefName)\"" |
               while read -r OLD OLD_BRANCH; do
                 OLD_VERSION="${OLD_BRANCH#"${SYNC_BRANCH_PREFIX}"}"
                 OLD_VERSION="${OLD_VERSION#-}"
+                if [ -n "$OLD_VERSION" ] && ! [[ "$OLD_VERSION" =~ $SEMVER ]]; then
+                  continue
+                fi
                 NEWER=$(printf '%s\n%s\n' "$OLD_VERSION" "$TO_VERSION" | sort -V | tail -n 1)
                 if [ -n "$OLD_VERSION" ] && [ "$NEWER" = "$OLD_VERSION" ]; then
                   echo "Leaving PR #${OLD} open: ${OLD_VERSION} is newer than ${TO_VERSION}."
