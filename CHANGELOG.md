@@ -28,6 +28,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
   used to build `standards-sync` from that branch, so the standards-only sync PR carried its
   unrelated commits.
 
+## [0.14.0] — 2026-11-22
+
+> **Minor — `standards/VERSION` `0.10.0` → `0.14.0`.** Standard 03 gains a "Deletion is recoverable" rule: permanent deletion is not a default action; files and directories go to the platform's recoverable-destruction facility (Recycle Bin / Trash) unless the change is explicitly requested as unrecoverable and recorded.
+
+### Changed — `standards/`
+
+- `standards/03-engineering-hygiene.md` — added "Deletion is recoverable": preferred deletion goes through the platform's recoverable-destruction facility; force-rm is not a default; agent harnesses should block permanent-delete commands and route deletion through a recoverable helper.
+
 ## [0.10.0] — 2026-11-22
 
 > **Minor — `standards/VERSION` `0.9.0` → `0.10.0`.** Standard `18` is added; standards `03`, `07`, `10`, `11` and `14` gain operational stacked-PR merge-order rules; standard `10` §10.8 adds "no code outside its own repository, ever"; and an A2A-outage recovery exception is recorded for the Grok CLI.

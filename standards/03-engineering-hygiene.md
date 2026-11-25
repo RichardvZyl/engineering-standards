@@ -111,3 +111,20 @@ Repository-level agent instruction files — `AGENTS.md`, `CLAUDE.md`, or whatev
 reads — are **binding on both people and assistants** working in that repository. Where such a
 file contradicts these standards, the repository's file wins for repository-specific facts, and
 these standards win for conventions. Project context belongs there; conventions belong here.
+
+## Deletion is recoverable
+
+**Rule.** Permanent deletion is not a default action. The preferred way to delete a file or
+directory is through the platform's recoverable-destruction facility — the Recycle Bin on
+Windows, the Trash on macOS — never a force-rm equivalent, unless the change is explicitly
+requested as unrecoverable and that request is recorded.
+
+**Reason.** A move to the recoverable-destruction facility can be walked back; a force-rm
+cannot. Recoverable deletion preserves the ability to undo, exactly what the git rules above
+demand of branches and stashes. Automating deletion without it turns an accident into a
+permanent one, and a system that deletes without an undo path cannot be operated safely.
+
+**Enforcement.** Where the agent harness supports pre-tool hooks, block the permanent-delete
+commands and route deletion through a recoverable helper. The hook raises the cost of an
+accident; it is not a security boundary — a person deliberately deleting, or an explicit and
+recorded request for unrecoverable deletion, is still honoured.
