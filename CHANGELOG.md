@@ -28,6 +28,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
   used to build `standards-sync` from that branch, so the standards-only sync PR carried its
   unrelated commits.
 
+## [0.15.0] — 2026-11-22
+
+> **Minor — `standards/VERSION` `0.14.0` → `0.15.0`.** Standard 13 gains the running-tasklist rule.
+
+### Added — `standards/`
+
+- `standards/13-concurrent-agents-and-working-memory.md` — **Running tasklist (13.6):** an agent keeps a single tasklist for work larger than one prompt and updates it in place as each step completes, so interrupted work is recoverable without redoing it.
+
 ## [0.14.0] — 2026-11-22
 
 > **Minor — `standards/VERSION` `0.10.0` → `0.14.0`.** Standard 03 gains a "Deletion is recoverable" rule: permanent deletion is not a default action; files and directories go to the platform's recoverable-destruction facility (Recycle Bin / Trash) unless the change is explicitly requested as unrecoverable and recorded.
