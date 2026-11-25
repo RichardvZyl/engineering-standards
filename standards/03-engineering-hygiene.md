@@ -37,11 +37,19 @@ mechanical checks are automated.
   `git merge-base --is-ancestor <branch> <target>` before removing it; use
   `git branch -d`, never `-D`, so git refuses if work would be lost. Record the SHA of
   anything deleted so it remains recoverable from the reflog.
-- **Sequence PRs by containment.** Before opening PRs, determine which branches are
-  ancestors of others (`git merge-base --is-ancestor` across every pair). Open them
-  oldest-first along the containment DAG. A PR merged out of order leaves a history that
-  cannot be cleanly reverted — the merge record prevents re-merging silently once the
-  branch is reverted.
+- **Sequence PRs by containment (stacked pull requests).** Before opening PRs, determine
+  which branches are ancestors of others (`git merge-base --is-ancestor` across every
+  pair). Open them oldest-first along the containment DAG. For a stack: the bottom PR
+  targets the repository's integration tip ([`10`](./10-repository-and-worktree-layout.md)
+  §10.8 — create `fully-merged` when that tip is missing); each upper PR targets the
+  **branch below it**, not the integration tip, until that lower PR has merged. **Merge
+  oldest-first.** After a lower PR merges, rebase or retarget every open upper PR onto the
+  new integration tip before merging it. Do not merge an upper PR while its lower
+  dependency is still open. Do not close or delete an upper branch while it still carries
+  unique commits (same delete rule as above). Failure modes of out-of-order handling:
+  history that cannot be cleanly reverted, **and** unique work on an upper branch falling
+  off because the branch was closed, abandoned after a conflicted retarget, or never
+  rebased onto the tip.
 - **Resolve every stash before the session ends.** A parked stash is uncommitted work.
   Inspect first with `git stash show --include-untracked --stat`; a stash holding only
   git-ignored local files can be popped and dropped.
@@ -103,3 +111,20 @@ Repository-level agent instruction files — `AGENTS.md`, `CLAUDE.md`, or whatev
 reads — are **binding on both people and assistants** working in that repository. Where such a
 file contradicts these standards, the repository's file wins for repository-specific facts, and
 these standards win for conventions. Project context belongs there; conventions belong here.
+
+## Deletion is recoverable
+
+**Rule.** Permanent deletion is not a default action. The preferred way to delete a file or
+directory is through the platform's recoverable-destruction facility — the Recycle Bin on
+Windows, the Trash on macOS — never a force-rm equivalent, unless the change is explicitly
+requested as unrecoverable and that request is recorded.
+
+**Reason.** A move to the recoverable-destruction facility can be walked back; a force-rm
+cannot. Recoverable deletion preserves the ability to undo, exactly what the git rules above
+demand of branches and stashes. Automating deletion without it turns an accident into a
+permanent one, and a system that deletes without an undo path cannot be operated safely.
+
+**Enforcement.** Where the agent harness supports pre-tool hooks, block the permanent-delete
+commands and route deletion through a recoverable helper. The hook raises the cost of an
+accident; it is not a security boundary — a person deliberately deleting, or an explicit and
+recorded request for unrecoverable deletion, is still honoured.

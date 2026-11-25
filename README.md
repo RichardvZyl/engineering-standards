@@ -33,20 +33,21 @@ Drift you can see in a PR is a decision. Drift you cannot see is just entropy.
 | `00-response-and-collaboration.md` | How an assistant should answer: density not brevity, where to go wide, what is never decided silently |
 | `01-architecture-defaults.md` | Multi-tenancy, read/write separation, result types, idempotency for money, contention |
 | `02-database-standards.md` | The database **rules** — exact types, tenant predicate, isolation, SARGability, indexing, scale, migrations |
-| `03-engineering-hygiene.md` | Style by configuration, git, secrets, compliance, tests, dependencies |
+| `03-engineering-hygiene.md` | Style by configuration, git (including stacked PR containment order), secrets, compliance, tests, dependencies |
 | `04-documentation-layout.md` | Where docs live and which file owns what, and **planning item identifiers** |
 | `05-decision-records.md` | ADR format; required by cost to reverse, not by importance |
 | `06-review-standards.md` | The two review axes, kept deliberately unmerged |
 | `07-repo-layout.md` | Directory shape, naming, and the conventions/context division |
 | `08-keeping-documents-current.md` | What closing something obliges: the surfaces to sync, the stale-reference sweep, the debt marker |
 | `09-durable-references.md` | What may be written down: never an absolute path, never a volatile number |
-| `10-repository-and-worktree-layout.md` | The base checkout named `root`, worktrees as siblings, and never working on the base |
+| `10-repository-and-worktree-layout.md` | The base checkout named `root`, worktrees as siblings, `fully-merged` integration tip (create when missing), and never working on the base |
 | `11-evidence-and-verification.md` | What counts as proof: the right harness, rename before absence, a bind is not reachability |
 | `12-data-handling-and-boundaries.md` | Open databases, interoperability boundaries, line-ending policy, and where secrets may not go |
 | `13-concurrent-agents-and-working-memory.md` | Single writer per file, whole-file writes, and why a snapshot is not working memory |
 | `14-agent-working-directories-and-file-placement.md` | Where an agent puts things: links into `agents/`, keepables in a worktree, scratch in `.temp/` |
 | `15-workflow-and-plan-pair.md` | Recurring work produces a workflow **and** a plan, and the workflow never references the plan |
 | `16-working-memory-protocol.md` | Three working-memory surfaces and the ordered rule that picks one; a snapshot is not working memory |
+| `18-deploy-artifacts-are-not-source.md` | Published runtime trees are release snapshots, not editable repos; publish-only path from `fully-merged` |
 
 ### The scripts
 
