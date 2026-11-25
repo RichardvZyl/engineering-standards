@@ -51,6 +51,8 @@ telling a newcomer anything; the first thing they see should be the shape of the
   request will fight. Disagree with a standard? Change it upstream.
 - **Generated output is never committed.** If it is generated, it is in `.gitignore`; if it must
   be committed, it is marked generated in `.gitattributes` so it collapses in diffs.
+  Published runtime bundles are a separate case: they are not committed as source, they are
+  **not edited in place**, and they follow [`18`](./18-deploy-artifacts-are-not-source.md).
 
 ## Naming
 

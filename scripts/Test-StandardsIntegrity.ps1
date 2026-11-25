@@ -14,8 +14,9 @@
          better, and that edit is lost at the next sync.
       2. VERSION - present and valid semver. The sync PR title is built from it.
       3. Relative links - every relative markdown link resolves to a file that exists.
-         templates/ is EXCLUDED: its links are written to resolve after seeding into a
-         consuming repo, so they are correctly broken here.
+         templates/ is EXCLUDED (its links resolve after seeding into a consuming repo) and
+         docs/dev-docs-import/ is EXCLUDED (imported reference and archival material whose
+         links resolve only in their original home). Both are correctly broken in place.
       4. ADR index - if docs/adr/ exists, every record has a row in its README and every row
          points at a record that exists.
 
@@ -88,13 +89,15 @@ $checked['VERSION'] = $version ?? '(missing)'
 
 # --- 3. Relative links --------------------------------------------------------
 
-# templates/ links resolve only after seeding downstream; excluded by design.
+# templates/ links resolve only after seeding downstream; docs/dev-docs-import/ is imported
+# reference and archival material (pre-consolidation standards snapshots and worktree backups)
+# whose links resolve only in their original home. Both are excluded from link checking.
 $linkFiles = @(
     Get-ChildItem -LiteralPath $root -Recurse -File -Filter '*.md' -Force |
         Where-Object {
             $relative = [System.IO.Path]::GetRelativePath($root, $_.FullName)
             $segments = $relative -split '[\\/]'
-            ($segments -notcontains '.git') -and ($segments[0] -ne 'templates')
+            ($segments -notcontains '.git') -and ($segments[0] -ne 'templates') -and -not ($segments[0] -eq 'docs' -and $segments[1] -eq 'dev-docs-import')
         }
 )
 

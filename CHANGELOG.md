@@ -13,13 +13,44 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
-## [0.10.0] — 2026-11-22
+### Fixed — repository (not vendored; `standards/VERSION` unchanged)
 
-> **Minor — `standards/VERSION` `0.9.0` → `0.10.0`.** Standard 03 gains a "Deletion is recoverable" rule: permanent deletion is not a default action; files and directories go to the platform's recoverable-destruction facility (Recycle Bin / Trash) unless the change is explicitly requested as unrecoverable and recorded.
+- **`.github/workflows/standards-sync.yml` template:** the push step used
+  `git push --force-with-lease` against a `standards-sync` ref the checkout never fetched, so
+  every run after the first was rejected and downstream copies stopped receiving sync PRs.
+  Each version now gets its own branch, `standards-sync-<to-version>`, pushed once and never
+  force-pushed, so the workflow no longer rewrites published history (standard 03). A rerun
+  for the same version reuses the branch and fails if its `standards/` differs. A closed PR
+  for that version is not reopened. A newer version's PR closes the older open sync PR and
+  keeps its branch. A `concurrency` group stops two runs racing to create the same branch.
+- **`.github/workflows/standards-sync.yml` template:** the checkout now pins
+  `ref: ${{ github.event.repository.default_branch }}`. A manual dispatch from a feature branch
+  used to build `standards-sync` from that branch, so the standards-only sync PR carried its
+  unrelated commits.
+
+## [0.14.0] — 2026-11-22
+
+> **Minor — `standards/VERSION` `0.10.0` → `0.14.0`.** Standard 03 gains a "Deletion is recoverable" rule: permanent deletion is not a default action; files and directories go to the platform's recoverable-destruction facility (Recycle Bin / Trash) unless the change is explicitly requested as unrecoverable and recorded.
 
 ### Changed — `standards/`
 
 - `standards/03-engineering-hygiene.md` — added "Deletion is recoverable": preferred deletion goes through the platform's recoverable-destruction facility; force-rm is not a default; agent harnesses should block permanent-delete commands and route deletion through a recoverable helper.
+
+## [0.10.0] — 2026-11-22
+
+> **Minor — `standards/VERSION` `0.9.0` → `0.10.0`.** Standard `18` is added; standards `03`, `07`, `10`, `11` and `14` gain operational stacked-PR merge-order rules; standard `10` §10.8 adds "no code outside its own repository, ever"; and an A2A-outage recovery exception is recorded for the Grok CLI.
+
+### Changed — `standards/`
+
+**Stacked PR merge order and `fully-merged` creation.** Standard `03` expands **Sequence PRs by containment** into operational stacked-PR rules: upper PR bases the branch below; merge oldest-first; rebase or retarget after the lower merges; do not close or delete an upper branch while it still has unique commits; failure modes include unclean revert and unique work falling off. Standard `10` §10.8 requires creating `fully-merged` as a fast-forward of the remote default trunk when it is missing on repositories that accept feature work or publish integration, and exempts trunk-only repositories whose recorded policy forbids non-trunk local branches. Planning note: [`docs/planning/2026-11-18-stacked-pr-merge-order.md`](./docs/planning/2026-11-18-stacked-pr-merge-order.md).
+
+**Standard `10` §10.8 — no code outside its own repository, ever.** A repository's runnable code lives only in that repository; a long-running service starts from a merged release build of its repository, not from an unmerged worktree or a hand-patched copy. Recorded exception: when A2A is down, bots run the Grok CLI directly (`E:\Tools\npm-global\grok.ps1`) rather than through A2A, and only to restore A2A.
+
+### Added — `standards/`
+
+> Number **18** (not 17): sibling branch `standards/17-agent-execution` already claims `17-agent-execution.md` on origin; this line keeps the permanent-number rule collision-free.
+
+**Standard `18` — deploy artifacts are not source.** Earned when a published content-addressed release was edited in place because the deploy tree still looked like a TypeScript project. Names six conventions: **Deploy layout is not a repository**, **GENERATED banner and refuse-to-start**, **Read-only deploy tree**, **Config vs code separation**, **BUILD provenance**, and **Publish-only path**. Source stays under `${dev-root}/repositories` on `fully-merged`; runtimes consume minified, mildly obfuscated bundles with `BUILD.json` and a hard launcher refusal when the tree looks like source. ADR [`0001`](./docs/adr/0001-deploy-artifacts-are-not-source.md) records the options.
 
 ## [0.9.0] — 2026-11-05
 

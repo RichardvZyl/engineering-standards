@@ -37,11 +37,19 @@ mechanical checks are automated.
   `git merge-base --is-ancestor <branch> <target>` before removing it; use
   `git branch -d`, never `-D`, so git refuses if work would be lost. Record the SHA of
   anything deleted so it remains recoverable from the reflog.
-- **Sequence PRs by containment.** Before opening PRs, determine which branches are
-  ancestors of others (`git merge-base --is-ancestor` across every pair). Open them
-  oldest-first along the containment DAG. A PR merged out of order leaves a history that
-  cannot be cleanly reverted — the merge record prevents re-merging silently once the
-  branch is reverted.
+- **Sequence PRs by containment (stacked pull requests).** Before opening PRs, determine
+  which branches are ancestors of others (`git merge-base --is-ancestor` across every
+  pair). Open them oldest-first along the containment DAG. For a stack: the bottom PR
+  targets the repository's integration tip ([`10`](./10-repository-and-worktree-layout.md)
+  §10.8 — create `fully-merged` when that tip is missing); each upper PR targets the
+  **branch below it**, not the integration tip, until that lower PR has merged. **Merge
+  oldest-first.** After a lower PR merges, rebase or retarget every open upper PR onto the
+  new integration tip before merging it. Do not merge an upper PR while its lower
+  dependency is still open. Do not close or delete an upper branch while it still carries
+  unique commits (same delete rule as above). Failure modes of out-of-order handling:
+  history that cannot be cleanly reverted, **and** unique work on an upper branch falling
+  off because the branch was closed, abandoned after a conflicted retarget, or never
+  rebased onto the tip.
 - **Resolve every stash before the session ends.** A parked stash is uncommitted work.
   Inspect first with `git stash show --include-untracked --stat`; a stash holding only
   git-ignored local files can be popped and dropped.

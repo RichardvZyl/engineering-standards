@@ -27,7 +27,16 @@ permissions:
 
 env:
   UPSTREAM_REPO: RichardvZyl/engineering-standards
-  SYNC_BRANCH: standards-sync
+  # Each version gets its own branch, <prefix>-<version>, pushed once and never rewritten:
+  # standard 03 prohibits rewriting published history, bot-owned branches included. A hyphen,
+  # not a slash: a leftover branch named <prefix> would make <prefix>/<version> unpushable.
+  SYNC_BRANCH_PREFIX: standards-sync
+# One sync at a time per repository, so two runs cannot both create the same version's branch
+# and pull request. GitHub keeps only the newest pending run per group; a manual dispatch
+# replaced while waiting must be re-dispatched.
+concurrency:
+  group: standards-sync
+  cancel-in-progress: false
 
 jobs:
   sync:
@@ -36,6 +45,10 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v4
+        with:
+          # Build from the default branch even on a manual dispatch from another branch, so the
+          # sync PR never carries that branch's unrelated commits.
+          ref: ${{ github.event.repository.default_branch }}
 
       - name: Fetch the sync script from upstream
         run: |
@@ -70,7 +83,8 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git checkout -B "$SYNC_BRANCH"
+          SYNC_BRANCH="${SYNC_BRANCH_PREFIX}-${TO_VERSION}"
+          TITLE="Standards sync: ${FROM_VERSION} → ${TO_VERSION}"
 
           # Only standards/ is staged. Even if something else were dirty, it does not travel.
           git add standards/
@@ -80,10 +94,19 @@ jobs:
             exit 0
           fi
 
-          TITLE="Standards sync: ${FROM_VERSION} → ${TO_VERSION}"
-
-          git commit -m "$TITLE" -m "$SUMMARY"
-          git push --force-with-lease origin "$SYNC_BRANCH"
+          if git ls-remote --exit-code --heads origin "$SYNC_BRANCH" > /dev/null; then
+            # An earlier run pushed this version. Reuse the branch as it is; never rewrite it.
+            git fetch --no-tags --depth=1 origin "refs/heads/${SYNC_BRANCH}:refs/remotes/origin/${SYNC_BRANCH}"
+            if ! git diff --cached --quiet "origin/${SYNC_BRANCH}" -- standards/; then
+              echo "::error::${SYNC_BRANCH} already exists with different standards/ content. Upstream changed standards/ without bumping standards/VERSION; fix it upstream."
+              exit 1
+            fi
+            echo "${SYNC_BRANCH} already carries this sync."
+          else
+            git checkout -b "$SYNC_BRANCH"
+            git commit -m "$TITLE" -m "$SUMMARY"
+            git push origin "$SYNC_BRANCH"
+          fi
 
           BODY=$(cat <<EOF
           Vendored \`standards/\` has fallen behind \`${UPSTREAM_REPO}\`.
@@ -105,16 +128,44 @@ jobs:
           EOF
           )
 
-          EXISTING=$(gh pr list --head "$SYNC_BRANCH" --state open --json number --jq '.[0].number // empty')
+          # Same-repository PRs only: a fork PR can share the branch name and must not count.
+          # A closed PR for this version counts too: a person closed it, and the next weekly run
+          # must not reopen the question.
+          EXISTING=$(gh pr list --head "$SYNC_BRANCH" --state all --json number,isCrossRepository \
+            --jq '[.[] | select(.isCrossRepository | not)][0].number // empty')
 
           if [ -n "$EXISTING" ]; then
-            gh pr edit "$EXISTING" --title "$TITLE" --body "$BODY"
-            echo "Updated PR #${EXISTING}."
+            echo "PR #${EXISTING} already covers ${SYNC_BRANCH}."
           else
             gh pr create --head "$SYNC_BRANCH" --title "$TITLE" --body "$BODY"
             echo "Opened a new PR."
           fi
 
+          # An open sync PR for an older version is superseded: close it, and keep its branch.
+          # A newer version's PR is left alone, so dispatching an older ref cannot close it. Only
+          # plain MAJOR.MINOR.PATCH versions are compared; any other branch name is left alone.
+          SEMVER='^[0-9]+\.[0-9]+\.[0-9]+$'
+          CURRENT=$(gh pr list --head "$SYNC_BRANCH" --state open --json number,isCrossRepository \
+            --jq '[.[] | select(.isCrossRepository | not)][0].number // empty')
+          if [ -n "$CURRENT" ] && [[ "$TO_VERSION" =~ $SEMVER ]]; then
+            gh pr list --state open --limit 1000 --json number,headRefName,isCrossRepository \
+              --jq ".[] | select(.isCrossRepository | not) | select(.headRefName == \"${SYNC_BRANCH_PREFIX}\" or (.headRefName | startswith(\"${SYNC_BRANCH_PREFIX}-\"))) | select(.headRefName != \"${SYNC_BRANCH}\") | \"\(.number) \(.headRefName)\"" |
+              while read -r OLD OLD_BRANCH; do
+                OLD_VERSION="${OLD_BRANCH#"${SYNC_BRANCH_PREFIX}"}"
+                OLD_VERSION="${OLD_VERSION#-}"
+                if [ -n "$OLD_VERSION" ] && ! [[ "$OLD_VERSION" =~ $SEMVER ]]; then
+                  continue
+                fi
+                NEWER=$(printf '%s\n%s\n' "$OLD_VERSION" "$TO_VERSION" | sort -V | tail -n 1)
+                if [ -n "$OLD_VERSION" ] && [ "$NEWER" = "$OLD_VERSION" ]; then
+                  echo "Leaving PR #${OLD} open: ${OLD_VERSION} is newer than ${TO_VERSION}."
+                  continue
+                fi
+                gh pr close "$OLD" --comment "Superseded by #${CURRENT} (standards ${TO_VERSION})."
+                echo "Closed superseded PR #${OLD}."
+              done
+          fi
+
       - name: Report no drift
         if: steps.sync.outputs.has_drift != 'true'
-        run: echo "standards/ is current at ${{ steps.sync.outputs.to_version }}. No PR needed."
+        run: echo "standards/ is current at ${{ steps.sync.outputs.to_version }}. No PR needed."
