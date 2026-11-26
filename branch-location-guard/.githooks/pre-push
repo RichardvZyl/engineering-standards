@@ -1,31 +1,28 @@
 #!/bin/sh
-# branch-location-guard: refuse push unless location (or no-branch) policy passes.
-# Fail-closed stdin: git feeds ref lines on stdin; if stdin cannot be consumed, refuse.
+# Branch-location guard (pre-push). Fails closed: if the guard cannot run, the operation is refused.
 # Inactive until core.hooksPath=.githooks is set locally.
 set -eu
 DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+guard="$DIR/Invoke-BranchLocationGuard.ps1"
+[ -f "$guard" ] || { echo "BRANCH LOCATION GUARD: guard script missing; refusing." >&2; exit 1; }
 
-# Consume stdin from git. Empty stdin is allowed (no refs). An IO failure is not —
-# refuse rather than pushing while blind.
-if ! stdin_data=$(cat 2>/dev/null); then
-    printf 'branch-location-guard: REFUSED. cannot read pre-push stdin (fail closed).\n' >&2
-    exit 1
-fi
-: "${stdin_data}"
+# Original fail-closed stdin consume (git feeds ref lines on stdin).
+cat >/dev/null
 
 run_ps1() {
     exe=$1
     shift
-    "$exe" -NoProfile -File "$DIR/Invoke-BranchLocationGuard.ps1" "$@"
+    "$exe" -NoProfile -ExecutionPolicy Bypass -File "$guard" -Hook pre-push "$@" </dev/null || exit 1
 }
 
 if command -v pwsh >/dev/null 2>&1; then
-    run_ps1 pwsh || exit $?
-elif command -v powershell.exe >/dev/null 2>&1; then
-    run_ps1 powershell.exe || exit $?
+    run_ps1 pwsh
 elif command -v pwsh.exe >/dev/null 2>&1; then
-    run_ps1 pwsh.exe || exit $?
+    run_ps1 pwsh.exe
+elif command -v powershell.exe >/dev/null 2>&1; then
+    gpath=$(cygpath -w "$guard" 2>/dev/null || echo "$guard")
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$gpath" -Hook pre-push </dev/null || exit 1
 else
-    sh "$DIR/branch-location-guard.sh" || exit $?
+    sh "$DIR/branch-location-guard.sh" || exit 1
 fi
 exit 0

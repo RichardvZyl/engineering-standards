@@ -16,11 +16,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 ### Added — repository (not vendored; `standards/VERSION` unchanged)
 
 - **`branch-location-guard/`:** shareable fail-closed git hooks enforcing Branching
-  location via `Get-Decision` (outside-base, wrong-depth, root leaf,
-  git-dir==common-dir; `BRANCH_GUARD_BASE` only; `BRANCH_GUARD_MODE` enforce|log|no-branch;
-  `BRANCH_GUARD_ROOT_NAME`; `BRANCH_GUARD_LOG` leaf+decision; WSL translation; POSIX
-  fallback; fail-closed pre-push stdin; `Install-BranchGuard.ps1`; GitHub audit script;
-  original five Pester cases + extensions; `ROLLOUT.md`). Hooks dormant until local
+  location via original `Get-Decision` (outside-base, wrong-depth, root leaf,
+  git-dir==common-dir; original reason strings; `-Hook`; undecidable fail-closed;
+  `BRANCH_GUARD_BASE` only; `BRANCH_GUARD_MODE` enforce|log|no-branch;
+  `BRANCH_GUARD_ROOT_NAME`; original `BRANCH_GUARD_LOG` shape; WSL translation; POSIX
+  fallback; pre-push `cat >/dev/null`; `Install-BranchGuard.ps1` with
+  `.prev-YYYYMMDD` keep / `.pre-branch-guard` restore; GitHub audit; original five
+  Pester cases + extensions; `ROLLOUT.md`). Hooks dormant until local
   `core.hooksPath=.githooks`.
 - **`AGENTS.md`:** Branching location rule pointing at the guard package (env-var base,
   no hardcoded drive path).

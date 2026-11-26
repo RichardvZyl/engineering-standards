@@ -46,13 +46,13 @@ When `-Apply` would replace a differing hook file, the previous file is kept as
 | `BRANCH_GUARD_BASE` | Yes (enforce/log) | Owner folder containing each `<repo>/<worktree>` |
 | `BRANCH_GUARD_MODE` | No | `enforce` (default), `log`, or `no-branch` |
 | `BRANCH_GUARD_ROOT_NAME` | No | Leaf name refused as the base checkout (default `root`) |
-| `BRANCH_GUARD_LOG` | No | Append-only log path; writes `<repoLeaf> <decision>` only |
+| `BRANCH_GUARD_LOG` | No | Append-only log: timestamp + `hook repo=<name> allowed=… mode=… reason=…` (no full paths) |
 | `branchGuard.mode` | No | Local git config mirror of mode (set by installer) |
 
 ### Modes
 
 - **enforce** — refuse on `Get-Decision` failure (default, fail closed)
-- **log** — run the same checks, record leaf + decision, allow the operation
+- **log** — run the same checks, record the decision, print the refuse message, exit 0
 - **no-branch** — only the repository default branch may be used (inverted guard)
 
 ### WSL

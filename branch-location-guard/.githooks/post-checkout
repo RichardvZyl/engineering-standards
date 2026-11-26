@@ -1,7 +1,5 @@
 #!/bin/sh
 # no-branch mode: after checkout, refuse (exit 1) when not on the default branch.
-# Limits: git has already switched branches; this cannot undo the checkout.
-# `git worktree add` also cannot be blocked by a hook; see README.
 set -eu
 
 mode=${BRANCH_GUARD_MODE:-}
@@ -15,12 +13,15 @@ case $mode in
 esac
 
 DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+guard="$DIR/Invoke-BranchLocationGuard.ps1"
+[ -f "$guard" ] || { echo "BRANCH LOCATION GUARD: guard script missing; refusing." >&2; exit 1; }
 
 if command -v pwsh >/dev/null 2>&1; then
-    pwsh -NoProfile -File "$DIR/Invoke-BranchLocationGuard.ps1" -Mode no-branch || exit $?
+    pwsh -NoProfile -ExecutionPolicy Bypass -File "$guard" -Hook post-checkout -Mode no-branch </dev/null || exit 1
 elif command -v powershell.exe >/dev/null 2>&1; then
-    powershell.exe -NoProfile -File "$DIR/Invoke-BranchLocationGuard.ps1" -Mode no-branch || exit $?
+    gpath=$(cygpath -w "$guard" 2>/dev/null || echo "$guard")
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$gpath" -Hook post-checkout -Mode no-branch </dev/null || exit 1
 else
-    BRANCH_GUARD_MODE=no-branch sh "$DIR/branch-location-guard.sh" || exit $?
+    BRANCH_GUARD_MODE=no-branch sh "$DIR/branch-location-guard.sh" || exit 1
 fi
 exit 0

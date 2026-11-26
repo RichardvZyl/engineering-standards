@@ -1,7 +1,7 @@
 #Requires -Version 7.0
 # Dot-sourced by Invoke-BranchLocationGuard.ps1 and Pester tests.
-# Decision core mirrors the original Get-Decision contract, plus approved extensions
-# (env-only base, WSL translation, no-branch mode).
+# Get-Decision matches Richard's original algorithm (Resolve-Norm + Split-Path depth);
+# WSL translation and env-only base are approved extensions applied at the edges.
 
 Set-StrictMode -Version Latest
 
@@ -39,19 +39,39 @@ function ConvertTo-WindowsPathStyle {
                 if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($converted)) {
                     return ($converted.Trim() -replace '/', '\').TrimEnd('\')
                 }
-            } catch {
-                # fall through
-            }
+            } catch { }
         }
     }
 
     return ($p -replace '/', '\')
 }
 
-function ConvertTo-ComparablePath {
-    param([Parameter(Mandatory)][string] $Path)
-    $win = ConvertTo-WindowsPathStyle -Path $Path
-    return $win.ToLowerInvariant().TrimEnd('\')
+# Original Resolve-Norm, with WSL/Unix-safe handling for drive-letter paths on Linux.
+function Resolve-Norm([string]$p) {
+    $p = ConvertTo-WindowsPathStyle -Path $p
+    $p = (($p -replace '/', '\') -replace '\\+', '\').TrimEnd('\')
+    if ($IsWindows) {
+        try {
+            return [IO.Path]::GetFullPath($p).TrimEnd('\')
+        } catch {
+            return $p
+        }
+    }
+    return $p
+}
+
+function Get-WinParent([string]$p) {
+    $p = $p.TrimEnd('\')
+    $i = $p.LastIndexOf('\')
+    if ($i -lt 0) { return '' }
+    return $p.Substring(0, $i)
+}
+
+function Get-WinLeaf([string]$p) {
+    $p = $p.TrimEnd('\')
+    $i = $p.LastIndexOf('\')
+    if ($i -lt 0) { return $p }
+    return $p.Substring($i + 1)
 }
 
 function Get-BranchGuardRootName {
@@ -68,7 +88,7 @@ function Get-BranchGuardMode {
             '^(?i)log$' { return 'log' }
             '^(?i)no-?branch$' { return 'no-branch' }
             '^(?i)enforce$' { return 'enforce' }
-            '^(?i)location$' { return 'enforce' } # alias used briefly in the first rebuild
+            '^(?i)location$' { return 'enforce' }
             default { return 'enforce' }
         }
     }
@@ -91,30 +111,18 @@ function Get-BranchGuardMode {
 }
 
 function Get-GitToplevel {
-    if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-        throw 'git is not available'
-    }
+    if (-not (Get-Command git -ErrorAction SilentlyContinue)) { throw 'git is not available' }
     $top = (& git rev-parse --show-toplevel 2>$null)
-    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($top)) {
-        throw 'not inside a git work tree'
-    }
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($top)) { throw 'git returned an empty path' }
     return $top.Trim()
 }
 
 function Get-GitDirPair {
-    # Absolute git-dir and git-common-dir. Equal ⇒ primary checkout (not a linked worktree).
     $gitDir = (& git rev-parse --path-format=absolute --git-dir 2>$null)
-    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($gitDir)) {
-        throw 'cannot resolve --git-dir'
-    }
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($gitDir)) { throw 'git returned an empty path' }
     $commonDir = (& git rev-parse --path-format=absolute --git-common-dir 2>$null)
-    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($commonDir)) {
-        throw 'cannot resolve --git-common-dir'
-    }
-    return [pscustomobject]@{
-        GitDir    = $gitDir.Trim()
-        CommonDir = $commonDir.Trim()
-    }
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($commonDir)) { throw 'git returned an empty path' }
+    return [pscustomobject]@{ GitDir = $gitDir.Trim(); CommonDir = $commonDir.Trim() }
 }
 
 function Get-GitCurrentBranch {
@@ -138,76 +146,36 @@ function Get-GitDefaultBranch {
     return 'main'
 }
 
-function Test-PathUnderBase {
-    param(
-        [Parameter(Mandatory)][string] $ComparableBase,
-        [Parameter(Mandatory)][string] $ComparablePath
-    )
-    if ($ComparablePath -eq $ComparableBase) { return $true }
-    $prefix = $ComparableBase + '\'
-    return $ComparablePath.StartsWith($prefix, [System.StringComparison]::Ordinal)
-}
-
-function Get-RelativeSegments {
-    param(
-        [Parameter(Mandatory)][string] $ComparableBase,
-        [Parameter(Mandatory)][string] $ComparablePath
-    )
-    if ($ComparablePath -eq $ComparableBase) { return ,[string[]]@() }
-    $prefix = $ComparableBase + '\'
-    if (-not $ComparablePath.StartsWith($prefix, [System.StringComparison]::Ordinal)) {
-        return $null
-    }
-    $rel = $ComparablePath.Substring($prefix.Length)
-    if ([string]::IsNullOrWhiteSpace($rel)) { return ,[string[]]@() }
-    return ,[string[]]@(@($rel -split '\\+') | Where-Object { $_ -ne '' })
-}
-
-function Write-BranchGuardLog {
-    param(
-        [string] $RepoLeaf,
-        [string] $Decision
-    )
-    $logPath = $env:BRANCH_GUARD_LOG
-    if ([string]::IsNullOrWhiteSpace($logPath)) { return }
-    $leaf = if ([string]::IsNullOrWhiteSpace($RepoLeaf)) { '-' } else { $RepoLeaf }
-    $line = "$leaf $Decision"
-    $dir = Split-Path -Parent $logPath
-    if ($dir -and -not (Test-Path -LiteralPath $dir)) {
-        New-Item -ItemType Directory -Path $dir -Force | Out-Null
-    }
-    Add-Content -LiteralPath $logPath -Value $line -Encoding utf8
-}
-
-function New-Decision {
-    param(
-        [bool] $Allowed,
-        [string] $Code,
-        [string] $Reason,
-        [string] $RepoLeaf = '',
-        [string] $Mode = 'enforce'
-    )
-    return [pscustomobject]@{
-        Allowed  = $Allowed
-        Code     = $Code
-        Decision = $Code
-        Reason   = $Reason
-        RepoLeaf = $RepoLeaf
-        Mode     = $Mode
-    }
+# Original log helper: timestamp + message; swallow write errors; no full paths.
+function Write-GuardLog([string]$m) {
+    if (-not $env:BRANCH_GUARD_LOG) { return }
+    try {
+        Add-Content -LiteralPath $env:BRANCH_GUARD_LOG -Value ('{0} {1}' -f (Get-Date -Format o), $m)
+    } catch { }
 }
 
 function Get-Decision {
     <#
-      .SYNOPSIS
-        Original decision contract: outside-base, wrong-depth, root leaf, git-dir==common-dir.
+      Original positional contract:
+        Get-Decision -Top -GitDir -CommonDir -Base -RootName
+      Also accepts -Toplevel as an alias for -Top (callers/tests).
     #>
     [CmdletBinding()]
     param(
-        [string] $Toplevel,
-        [string] $Base,
+        [Parameter(Position = 0)]
+        [Alias('Toplevel')]
+        [string] $Top,
+
+        [Parameter(Position = 1)]
         [string] $GitDir,
+
+        [Parameter(Position = 2)]
         [string] $CommonDir,
+
+        [Parameter(Position = 3)]
+        [string] $Base,
+
+        [Parameter(Position = 4)]
         [string] $RootName
     )
 
@@ -215,72 +183,37 @@ function Get-Decision {
         $Base = $env:BRANCH_GUARD_BASE
     }
     if ([string]::IsNullOrWhiteSpace($Base)) {
-        return New-Decision -Allowed $false -Code 'UnsetBase' `
-            -Reason 'BRANCH_GUARD_BASE is not set. Set it to the repositories owner folder (the directory that contains each <repo>/root and <repo>/<worktree> pair), then retry. There is no hardcoded default.'
+        return @{
+            Allowed = $false
+            Reason  = 'undecidable: BRANCH_GUARD_BASE is not set'
+            Repo    = '?'
+            Code    = 'UnsetBase'
+        }
     }
-
     if ([string]::IsNullOrWhiteSpace($RootName)) {
         $RootName = Get-BranchGuardRootName
     }
 
-    if ([string]::IsNullOrWhiteSpace($Toplevel)) {
-        try { $Toplevel = Get-GitToplevel } catch {
-            return New-Decision -Allowed $false -Code 'NoToplevel' `
-                -Reason "cannot determine git toplevel: $($_.Exception.Message)"
-        }
+    $top = Resolve-Norm $Top
+    $base = Resolve-Norm $Base
+    $parent = Get-WinParent $top
+    $repoDir = Get-WinParent $parent
+    $leaf = Get-WinLeaf $top
+    $repoName = Get-WinLeaf $parent
+
+    if (-not $top.StartsWith($base + '\', [StringComparison]::OrdinalIgnoreCase)) {
+        return @{ Allowed = $false; Reason = 'outside-base'; Repo = $repoName; Code = 'OutsideBase' }
     }
-
-    if ([string]::IsNullOrWhiteSpace($GitDir) -or [string]::IsNullOrWhiteSpace($CommonDir)) {
-        try {
-            $pair = Get-GitDirPair
-            if ([string]::IsNullOrWhiteSpace($GitDir)) { $GitDir = $pair.GitDir }
-            if ([string]::IsNullOrWhiteSpace($CommonDir)) { $CommonDir = $pair.CommonDir }
-        } catch {
-            return New-Decision -Allowed $false -Code 'NoGitDir' `
-                -Reason "cannot resolve git-dir/common-dir: $($_.Exception.Message)"
-        }
+    if ((Resolve-Norm $repoDir) -ne $base) {
+        return @{ Allowed = $false; Reason = 'wrong-depth (expected <base>\<repo>\<worktree>)'; Repo = $repoName; Code = 'WrongDepth' }
     }
-
-    $cmpBase = ConvertTo-ComparablePath -Path $Base
-    $cmpTop = ConvertTo-ComparablePath -Path $Toplevel
-    $cmpGit = ConvertTo-ComparablePath -Path $GitDir
-    $cmpCommon = ConvertTo-ComparablePath -Path $CommonDir
-
-    if (-not (Test-PathUnderBase -ComparableBase $cmpBase -ComparablePath $cmpTop)) {
-        return New-Decision -Allowed $false -Code 'OutsideBase' `
-            -Reason "toplevel '$Toplevel' is outside BRANCH_GUARD_BASE. Clones and worktrees must live under the configured base."
+    if ($leaf -ieq $RootName) {
+        return @{ Allowed = $false; Reason = "branching inside $RootName\ is not allowed"; Repo = $repoName; Code = 'RootLeaf' }
     }
-
-    $segments = Get-RelativeSegments -ComparableBase $cmpBase -ComparablePath $cmpTop
-    if ($null -eq $segments) {
-        return New-Decision -Allowed $false -Code 'OutsideBase' `
-            -Reason "toplevel '$Toplevel' is outside BRANCH_GUARD_BASE."
+    if ((Resolve-Norm $GitDir) -ieq (Resolve-Norm $CommonDir)) {
+        return @{ Allowed = $false; Reason = 'not a linked worktree (git-dir equals common-dir)'; Repo = $repoName; Code = 'PrimaryCheckout' }
     }
-
-    $segmentList = @($segments)
-    # Expect exactly <repo>/<worktree>
-    if ($segmentList.Count -ne 2) {
-        $leaf = if ($segmentList.Count -ge 1) { $segmentList[-1] } else { '' }
-        return New-Decision -Allowed $false -Code 'WrongDepth' -RepoLeaf $leaf `
-            -Reason "toplevel must be BRANCH_GUARD_BASE/<repo>/<worktree> (exactly two levels under the base). Got $($segmentList.Count) level(s) under the base. Never commit from the repository folder itself or from nested paths."
-    }
-
-    $repoName = $segmentList[0]
-    $leaf = $segmentList[1]
-    $rootLc = $RootName.ToLowerInvariant()
-    if ($leaf.ToLowerInvariant() -eq $rootLc) {
-        return New-Decision -Allowed $false -Code 'RootLeaf' -RepoLeaf $leaf `
-            -Reason "commits and pushes are not allowed from <repo>/$RootName. Create a linked worktree beside $RootName and work there."
-    }
-
-    # Primary checkout (not a linked worktree): git-dir resolves to the same place as common-dir.
-    if ($cmpGit -eq $cmpCommon) {
-        return New-Decision -Allowed $false -Code 'PrimaryCheckout' -RepoLeaf $leaf `
-            -Reason "git-dir equals git-common-dir — this is the primary checkout, not a linked worktree. Work only in a linked worktree under BRANCH_GUARD_BASE/<repo>/<worktree>."
-    }
-
-    return New-Decision -Allowed $true -Code 'Allow' -RepoLeaf $leaf `
-        -Reason "linked worktree '$leaf' under repo '$repoName'"
+    return @{ Allowed = $true; Reason = 'ok'; Repo = $repoName; Code = 'Allow' }
 }
 
 function Get-NoBranchDecision {
@@ -299,69 +232,30 @@ function Get-NoBranchDecision {
 
     if (-not $branchProvided) {
         try { $CurrentBranch = Get-GitCurrentBranch } catch {
-            return New-Decision -Allowed $false -Code 'NoBranch' -Mode 'no-branch' `
-                -Reason "cannot determine current branch: $($_.Exception.Message)"
+            return @{ Allowed = $false; Reason = "undecidable: $($_.Exception.Message)"; Repo = '?'; Code = 'NoBranch' }
         }
     }
     if (-not $defaultProvided) {
         try { $DefaultBranch = Get-GitDefaultBranch } catch {
-            return New-Decision -Allowed $false -Code 'NoBranch' -Mode 'no-branch' `
-                -Reason "cannot determine default branch: $($_.Exception.Message)"
+            return @{ Allowed = $false; Reason = "undecidable: $($_.Exception.Message)"; Repo = '?'; Code = 'NoBranch' }
         }
     }
 
     if ([string]::IsNullOrWhiteSpace($CurrentBranch)) {
-        return New-Decision -Allowed $false -Code 'NoBranchDetached' -Mode 'no-branch' `
-            -Reason 'no-branch mode refuses detached HEAD; check out the default branch'
+        return @{
+            Allowed = $false
+            Reason  = 'no-branch mode refuses detached HEAD; check out the default branch'
+            Repo    = '?'
+            Code    = 'NoBranchDetached'
+        }
     }
     if ($CurrentBranch -ne $DefaultBranch) {
-        return New-Decision -Allowed $false -Code 'NoBranchWrongBranch' -Mode 'no-branch' `
-            -RepoLeaf $CurrentBranch `
-            -Reason "no-branch mode: current branch '$CurrentBranch' is not the default branch '$DefaultBranch'. Do not create or commit on other branches in this repository."
+        return @{
+            Allowed = $false
+            Reason  = "no-branch mode: current branch '$CurrentBranch' is not the default branch '$DefaultBranch'"
+            Repo    = $CurrentBranch
+            Code    = 'NoBranchWrongBranch'
+        }
     }
-    return New-Decision -Allowed $true -Code 'Allow' -Mode 'no-branch' -RepoLeaf $CurrentBranch `
-        -Reason "on default branch '$DefaultBranch'"
-}
-
-function Invoke-BranchGuardDecision {
-    # Compatibility wrapper used by hooks/tests: applies mode (enforce|log|no-branch).
-    [CmdletBinding()]
-    param(
-        [string] $Mode,
-        [string] $Toplevel,
-        [AllowNull()]
-        [AllowEmptyString()]
-        [string] $CurrentBranch = $null,
-        [AllowNull()]
-        [AllowEmptyString()]
-        [string] $DefaultBranch = $null,
-        [string] $Base,
-        [string] $GitDir,
-        [string] $CommonDir,
-        [string] $RootName
-    )
-
-    $resolvedMode = Get-BranchGuardMode -Mode $Mode
-
-    if ($resolvedMode -eq 'no-branch') {
-        $nbParams = @{ Mode = 'no-branch' }
-        # Get-NoBranchDecision uses ContainsKey — splat carefully
-        $nb = @{}
-        if ($PSBoundParameters.ContainsKey('CurrentBranch')) { $nb.CurrentBranch = $CurrentBranch }
-        if ($PSBoundParameters.ContainsKey('DefaultBranch')) { $nb.DefaultBranch = $DefaultBranch }
-        $result = Get-NoBranchDecision @nb
-        $result.Mode = 'no-branch'
-        return $result
-    }
-
-    $dParams = @{}
-    if ($PSBoundParameters.ContainsKey('Toplevel') -and $Toplevel) { $dParams.Toplevel = $Toplevel }
-    if ($PSBoundParameters.ContainsKey('Base')) { $dParams.Base = $Base }
-    if ($PSBoundParameters.ContainsKey('GitDir') -and $GitDir) { $dParams.GitDir = $GitDir }
-    if ($PSBoundParameters.ContainsKey('CommonDir') -and $CommonDir) { $dParams.CommonDir = $CommonDir }
-    if ($PSBoundParameters.ContainsKey('RootName') -and $RootName) { $dParams.RootName = $RootName }
-
-    $result = Get-Decision @dParams
-    $result.Mode = $resolvedMode
-    return $result
+    return @{ Allowed = $true; Reason = 'ok'; Repo = $CurrentBranch; Code = 'Allow' }
 }

@@ -9,7 +9,9 @@
   inactive without that local config).
 
   Never overwrites an existing hook file without keeping a dated copy named
-  <name>.prev-YYYYMMDD. Never uses the words backup or .bak.
+  <name>.prev-YYYYMMDD (preferred over the original <name>.pre-branch-guard).
+  Never uses the words backup or .bak. -Uninstall restores a kept copy when
+  present (.prev-YYYYMMDD preferred; .pre-branch-guard still accepted).
 
   Committed hooks are NOT active on CI or cloud VMs unless someone runs -Apply
   there (they should not). core.hooksPath is local config and is not pushed.
@@ -26,6 +28,7 @@ param(
     [string] $Mode = 'enforce',
 
     # Repository root that contains (or will contain) .githooks/. Defaults to cwd.
+    [Alias('Repo')]
     [string] $RepoRoot,
 
     # Source of the canonical .githooks tree. Defaults to this package's .githooks.
@@ -73,10 +76,45 @@ try {
     if ($PSCmdlet.ParameterSetName -eq 'Uninstall') {
         Write-PlanLine "Unset local core.hooksPath (was: $(if ($currentHooksPath) { $currentHooksPath } else { '<unset>' }))"
         Write-PlanLine "Unset local branchGuard.mode (was: $(if ($currentMode) { $currentMode } else { '<unset>' }))"
-        Write-PlanLine 'Committed .githooks/ files are left in place; without core.hooksPath they are inactive.'
+
+        # Restore kept hook copies from the active hooks dir and the common .git/hooks
+        # (legacy original Install wrote <name>.pre-branch-guard there).
+        $hookDirs = [System.Collections.Generic.List[string]]::new()
+        if ($currentHooksPath) {
+            $resolved = if ([IO.Path]::IsPathRooted($currentHooksPath)) {
+                $currentHooksPath
+            } else {
+                Join-Path $RepoRoot $currentHooksPath
+            }
+            $hookDirs.Add($resolved)
+        }
+        $commonHooks = (& git rev-parse --path-format=absolute --git-path hooks 2>$null)
+        if ($LASTEXITCODE -eq 0 -and $commonHooks) { $hookDirs.Add($commonHooks.Trim()) }
+        $hookDirs.Add($targetHooks)
+
+        foreach ($dir in ($hookDirs | Select-Object -Unique)) {
+            if (-not (Test-Path -LiteralPath $dir)) { continue }
+            foreach ($n in @('pre-commit', 'pre-push')) {
+                $dst = Join-Path $dir $n
+                $legacy = "$dst.pre-branch-guard"
+                $prevMatches = @(Get-ChildItem -LiteralPath $dir -Filter "$n.prev-*" -File -ErrorAction SilentlyContinue |
+                    Sort-Object Name -Descending)
+                $restoreFrom = $null
+                if ($prevMatches.Count -gt 0) { $restoreFrom = $prevMatches[0].FullName }
+                elseif (Test-Path -LiteralPath $legacy) { $restoreFrom = $legacy }
+
+                if ($restoreFrom) {
+                    Write-PlanLine "Restore $(Split-Path -Leaf $restoreFrom) -> $dst"
+                    Remove-Item -LiteralPath $dst -Force -ErrorAction SilentlyContinue
+                    Move-Item -LiteralPath $restoreFrom -Destination $dst -Force
+                }
+            }
+        }
+
+        Write-PlanLine 'Committed .githooks/ package files that were not kept-copies are left in place; without core.hooksPath they are inactive.'
         git config --local --unset-all core.hooksPath 2>$null | Out-Null
         git config --local --unset-all branchGuard.mode 2>$null | Out-Null
-        Write-Host 'Uninstalled: local core.hooksPath and branchGuard.mode cleared.' -ForegroundColor Green
+        Write-Host 'Uninstalled: local core.hooksPath and branchGuard.mode cleared; kept hooks restored when present.' -ForegroundColor Green
         return
     }
 

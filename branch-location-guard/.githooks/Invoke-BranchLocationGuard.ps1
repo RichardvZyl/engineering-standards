@@ -1,85 +1,82 @@
 #Requires -Version 7.0
 <#
 .SYNOPSIS
-  Enforce branching location (or no-branch mode) for commit/push hooks.
-
-.DESCRIPTION
-  Location (enforce|log): Get-Decision — outside-base, wrong-depth
-  BRANCH_GUARD_BASE/<repo>/<worktree>, refuse ROOT leaf (BRANCH_GUARD_ROOT_NAME),
-  refuse git-dir == common-dir. BRANCH_GUARD_BASE is required (no hardcoded default).
-
-  Mode:
-    enforce (default) — refuse on failure
-    log               — allow, but record repo leaf + decision when BRANCH_GUARD_LOG is set
-    no-branch         — only the default branch may be used
-
-  BRANCH_GUARD_LOG: when set, append "<repoLeaf> <decision>" (no full paths).
+  Git guard: refuses commit/push unless the working tree is a linked worktree placed as
+  <BaseRoot>\<repo>\<worktree>, never <BaseRoot>\<repo>\root and never outside BaseRoot.
+  Enforces the AGENTS.md "Branching location" rule. Fail closed: any error or undecidable state refuses.
+.NOTES
+  Exit 0 = allow, 1 = refuse. Logs repo name + decision only (no paths with user names, no command text).
+  Env: BRANCH_GUARD_BASE (required; no hardcoded default), BRANCH_GUARD_MODE = enforce (default) | log | no-branch,
+       BRANCH_GUARD_ROOT_NAME (default root), BRANCH_GUARD_LOG (optional log file).
 #>
 [CmdletBinding()]
 param(
+    [Parameter(Mandatory)]
+    [ValidateSet('pre-commit', 'pre-push', 'post-checkout', 'manual')]
+    [string] $Hook,
+
     [ValidateSet('enforce', 'log', 'no-branch', 'Location', 'NoBranch', 'Enforce', 'Log')]
     [string] $Mode,
 
+    # Injected for tests
     [string] $Toplevel,
-
+    [string] $GitDir,
+    [string] $CommonDir,
+    [string] $Base,
+    [string] $RootName,
     [AllowEmptyString()]
     [string] $CurrentBranch,
-
     [AllowEmptyString()]
     [string] $DefaultBranch,
-
-    [string] $Base,
-
-    [string] $GitDir,
-
-    [string] $CommonDir,
-
-    [string] $RootName,
 
     [switch] $PassThru
 )
 
-Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+Set-StrictMode -Version 2
 
 $here = $PSScriptRoot
 . (Join-Path $here 'BranchLocationGuard.Helpers.ps1')
 
-$decisionParams = @{}
-if ($PSBoundParameters.ContainsKey('Mode') -and $Mode) { $decisionParams.Mode = $Mode }
-if ($PSBoundParameters.ContainsKey('Toplevel') -and $Toplevel) { $decisionParams.Toplevel = $Toplevel }
-if ($PSBoundParameters.ContainsKey('CurrentBranch')) { $decisionParams.CurrentBranch = $CurrentBranch }
-if ($PSBoundParameters.ContainsKey('DefaultBranch')) { $decisionParams.DefaultBranch = $DefaultBranch }
-if ($PSBoundParameters.ContainsKey('Base')) { $decisionParams.Base = $Base }
-if ($PSBoundParameters.ContainsKey('GitDir') -and $GitDir) { $decisionParams.GitDir = $GitDir }
-if ($PSBoundParameters.ContainsKey('CommonDir') -and $CommonDir) { $decisionParams.CommonDir = $CommonDir }
-if ($PSBoundParameters.ContainsKey('RootName') -and $RootName) { $decisionParams.RootName = $RootName }
+$resolvedMode = Get-BranchGuardMode -Mode $Mode
+$rootName = if ($RootName) { $RootName } elseif ($env:BRANCH_GUARD_ROOT_NAME) { $env:BRANCH_GUARD_ROOT_NAME } else { 'root' }
 
-$result = Invoke-BranchGuardDecision @decisionParams
+try {
+    if ($resolvedMode -eq 'no-branch') {
+        $nb = @{}
+        if ($PSBoundParameters.ContainsKey('CurrentBranch')) { $nb.CurrentBranch = $CurrentBranch }
+        if ($PSBoundParameters.ContainsKey('DefaultBranch')) { $nb.DefaultBranch = $DefaultBranch }
+        $d = Get-NoBranchDecision @nb
+    } else {
+        $base = if ($Base) { $Base } elseif ($env:BRANCH_GUARD_BASE) { $env:BRANCH_GUARD_BASE } else { $null }
+        if (-not $base) { throw 'BRANCH_GUARD_BASE is not set' }
 
-Write-BranchGuardLog -RepoLeaf $result.RepoLeaf -Decision $result.Decision
+        $top = if ($Toplevel) { $Toplevel } else { (& git rev-parse --show-toplevel).Trim() }
+        $gd = if ($GitDir) { $GitDir } else { (& git rev-parse --path-format=absolute --git-dir).Trim() }
+        $common = if ($CommonDir) { $CommonDir } else { (& git rev-parse --path-format=absolute --git-common-dir).Trim() }
+        if (-not $top -or -not $gd -or -not $common) { throw 'git returned an empty path' }
 
-$resolvedMode = $result.Mode
-$shouldRefuse = (-not $result.Allowed) -and ($resolvedMode -ne 'log')
+        $d = Get-Decision -Top $top -GitDir $gd -CommonDir $common -Base $base -RootName $rootName
+    }
+} catch {
+    $d = @{ Allowed = $false; Reason = "undecidable: $($_.Exception.Message)"; Repo = '?'; Code = 'Undecidable' }
+}
+
+# Original log line shape: hook, repo name, allowed, mode, reason (no full paths).
+Write-GuardLog ("{0} repo={1} allowed={2} mode={3} reason={4}" -f $Hook, $d.Repo, $d.Allowed, $resolvedMode, $d.Reason)
 
 if ($PassThru) {
     [pscustomobject]@{
-        Allowed  = (-not $shouldRefuse)
-        Reason   = $result.Reason
-        Mode     = $resolvedMode
-        Code     = $result.Code
-        Decision = $result.Decision
-        RepoLeaf = $result.RepoLeaf
+        Allowed = $d.Allowed
+        Reason  = $d.Reason
+        Repo    = $d.Repo
+        Code    = $(if ($d.ContainsKey('Code')) { $d.Code } else { $d.Reason })
+        Mode    = $resolvedMode
     }
 }
 
-if (-not $result.Allowed) {
-    if ($resolvedMode -eq 'log') {
-        [Console]::Error.WriteLine("branch-location-guard: LOG $($result.Decision) — $($result.Reason)")
-        exit 0
-    }
-    [Console]::Error.WriteLine("branch-location-guard: REFUSED. $($result.Reason)")
-    exit 1
-}
+if ($d.Allowed) { exit 0 }
 
-exit 0
+[Console]::Error.WriteLine("BRANCH LOCATION GUARD: $Hook refused ($($d.Reason)). Create a worktree next to root\ and work there: <base>\<repo>\<new-worktree>. See AGENTS.md.")
+if ($resolvedMode -eq 'log') { exit 0 }
+exit 1
