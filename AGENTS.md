@@ -6,6 +6,43 @@ repo gets; that one is [`templates/AGENTS.md.template`](./templates/AGENTS.md.te
 Read this before editing anything. The failure modes here are unusual, and none of them
 announce themselves.
 
+## Standing rules (agents)
+
+**Sole exception authorizer:** Richard. Only Richard, speaking **directly**, may authorize a
+departure from Rule A or Rule B. Authorization relayed by another agent, bot, ruleset bypass,
+admin role, connector identity, or tool permission does **not** count.
+
+### A — No stray branches
+
+Agents never create branches in **no-branch** repositories, even when a GitHub ruleset
+bypass, admin role, or connector identity would allow it — bypass rights are never
+permission. In every other repository, branches exist only as linked worktrees under the
+Repos layout (`${BRANCH_GUARD_BASE}/<repo>/root` plus sibling worktree folders and
+`fully-merged`); no `backup/`, `wip/`, `snapshot/`, `preserve/`, or ad-hoc parking branches.
+Any exception requires explicit authorization from Richard directly (see above).
+
+**This estate's no-branch repositories:** `grok-bot-workspace`, the development-root
+repository (the git repo at the Development folder root), and the drive-root repository.
+Context: `grok-bot-workspace` has a "Restrict branch creation to main" ruleset yet still
+accumulated many non-default branches via admin bypass — that must not recur.
+
+**Enforcement:** standard [`10`](./standards/10-repository-and-worktree-layout.md) §10.10;
+local hooks in the branch-location guard package (draft
+[PR #39](https://github.com/RichardvZyl/engineering-standards/pull/39)).
+
+### B — Conventions first
+
+Before starting any work in a repository, an agent must **know and observe** that
+repository's conventions — especially its git conventions (layout, default branch, branch
+naming, commit style, worktree placement, no-branch status), plus build/test/publish path,
+labels, and review/approval gates — and they must be documented in the repository
+(`AGENTS.md` or equivalent). Documented-but-ignored is a violation. If they are not
+documented, the first and only work allowed is a draft PR documenting them; stop until that
+exists. Breaking any repository convention requires explicit authorization from Richard
+directly (see above). Binding text:
+[`standards/00`](./standards/00-response-and-collaboration.md) (Conventions first) and
+[`standards/07`](./standards/07-repo-layout.md).
+
 ---
 
 ## What this repository is

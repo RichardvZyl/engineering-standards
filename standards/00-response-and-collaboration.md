@@ -10,6 +10,29 @@
 How an assistant working in this repository should answer. This is the first standard because
 every other one is delivered through it.
 
+## Conventions first
+
+**Rule.** Before any other work in a repository, an agent must **know and observe** that
+repository's conventions — especially its **git** conventions (layout, default branch, branch
+naming, commit style, worktree placement, no-branch status), and also build/test/publish path,
+labels, and review and approval gates. Those conventions must be documented in the repository
+(`AGENTS.md` or an equivalent the repository points at).
+
+**Know is not enough.** Documented-but-ignored is a violation. An agent that has read the
+conventions and then breaks them has broken this rule.
+
+If they are not documented, the **first and only** work allowed is a draft pull request that
+documents them. Stop until that document exists. Guessing conventions is not a substitute.
+
+**Exceptions.** Breaking any repository convention requires **explicit authorization from the
+sole exception authorizer named in that repository's `AGENTS.md`**, given by that person
+**directly**. Authorization relayed by another agent, bot, ruleset bypass, admin role, connector
+identity, or tool permission does **not** count.
+
+Project-specific values and the named sole exception authorizer live in `AGENTS.md`; the shared
+how-we-work rules live in [`standards/`](./) ([`07`](./07-repo-layout.md)). Branch and worktree
+placement is [`10`](./10-repository-and-worktree-layout.md) §10.10.
+
 ## The rule
 
 **Density, not brevity — cut words, never options.**

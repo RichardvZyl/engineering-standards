@@ -199,7 +199,7 @@ creating non-trunk local branches (meta, path-allowlist, or other non-project co
 repositories) do **not** create `fully-merged` and do **not** run stacked feature-branch
 workflows. Work there stays on the single allowed trunk, or is not done in that repository
 at all. The exemption is policy-driven and generic; it is not a licence to skip
-`fully-merged` on ordinary project repositories.
+`fully-merged` on ordinary project repositories. See **10.10**.
 
 ## 10.9 Review checklist
 
@@ -227,6 +227,37 @@ at all. The exemption is policy-driven and generic; it is not a licence to skip
       inside WSL, a VM or a container (10.8).
 - [ ] Every long-running service starts from a merged release build of its repository, not from
       an unmerged worktree or a hand-patched copy (10.8).
+- [ ] No non-default branch exists on a trunk-only (no-branch) repository (10.10).
+- [ ] Every feature branch is a linked worktree sibling of `root/` (or `fully-merged`); no
+      parking branches (`backup/`, `wip/`, `snapshot/`, `preserve/`, or ad-hoc equivalents).
+
+## 10.10 No stray branches
+
+**Rule.** Agents do not create branches that the repository's recorded policy forbids, and they
+do not park work on ad-hoc branches outside the Repos layout.
+
+**Trunk-only (no-branch) repositories.** Where recorded policy forbids non-default branches —
+including meta and container repositories that are not ordinary project checkouts — an agent
+**never** creates, checks out for commit, or pushes a non-default branch. A GitHub ruleset
+bypass, admin role, or connector identity that *can* create the branch is **not** permission
+to create it. Bypass rights exist for emergencies; they are never standing licence for agent
+work.
+
+**All other repositories.** Branches exist only as linked worktrees under the Repos layout in
+[`10.1`](#101-shape): `${repos_root}/{repository_owner}/{repository_name}/root` plus sibling
+worktree folders, with `fully-merged` as the integration tip ([`10.8`](#108-integration-tip-is-fully-merged-create-it-when-missing)).
+There is no `backup/`, `wip/`, `snapshot/`, `preserve/`, or other parking branch used to hold
+unfinished work outside that layout.
+
+**Exceptions.** Any departure from this rule requires **explicit authorization from the sole
+exception authorizer named in that repository's `AGENTS.md`**, given by that person
+**directly**. Authorization relayed by another agent, bot, ruleset bypass, admin role,
+connector identity, or tool permission does **not** count ([`00`](./00-response-and-collaboration.md)
+— Conventions first).
+
+**Enforcement.** Local fail-closed hooks from the branch-location guard package enforce this
+when installed: location mode for Repos-layout repositories; `no-branch` mode for trunk-only
+repositories. Hooks stay dormant until `core.hooksPath` is set locally.
 
 ## A2A outage recovery exception
 

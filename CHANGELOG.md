@@ -28,6 +28,38 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
   used to build `standards-sync` from that branch, so the standards-only sync PR carried its
   unrelated commits.
 
+## [0.16.0] — 2026-11-26
+
+> **Minor — `standards/VERSION` `0.15.0` → `0.16.0`.** Adds **No stray branches** (10.10) and
+> **Conventions first** (00); wire-through in 03 and 07.
+
+### Added — `standards/`
+
+- `standards/10-repository-and-worktree-layout.md` — **No stray branches (10.10):** trunk-only
+  (no-branch) repositories never receive non-default branches from an agent; bypass/admin
+  rights are not permission. Other repositories keep branches only as Repos-layout worktrees
+  beside `root/` plus `fully-merged`; no parking branches. Exceptions only from the sole
+  exception authorizer named in `AGENTS.md`, given directly. Cross-links the branch-location
+  guard as local enforcement.
+- `standards/00-response-and-collaboration.md` — **Conventions first:** before any other work,
+  conventions must be **known and observed** (especially git); documented-but-ignored is a
+  violation; if missing, the only allowed work is a draft PR that documents them; exceptions
+  require direct authorization from the sole exception authorizer named in `AGENTS.md`
+  (not relayed by agent/bot/bypass/tool).
+
+### Changed — `standards/`
+
+- `standards/03-engineering-hygiene.md` — Git bullet pointing at 10.10.
+- `standards/07-repo-layout.md` — `AGENTS.md` must record the conventions an agent needs before
+  starting; missing → Conventions first.
+
+### Added — repository (not vendored)
+
+- Kit `AGENTS.md` and `templates/AGENTS.md.template` carry the standing rules, name Richard as
+  sole exception authorizer (direct only), and list this estate's no-branch instances; point at
+  the branch-location guard package (draft
+  [PR #39](https://github.com/RichardvZyl/engineering-standards/pull/39)) for Rule A enforcement.
+
 ## [0.15.0] — 2026-11-22
 
 > **Minor — `standards/VERSION` `0.14.0` → `0.15.0`.** Standard 13 gains the running-tasklist rule.

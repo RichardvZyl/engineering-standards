@@ -22,6 +22,11 @@ mechanical checks are automated.
 
 ## Git
 
+- **No stray branches.** Trunk-only repositories never get non-default branches from an agent,
+  even when a ruleset bypass or admin role would allow it. Everywhere else, branches exist only
+  as linked worktrees beside `root/` (and `fully-merged`); no parking branches. Exceptions only
+  from the sole exception authorizer named in `AGENTS.md`, given directly — not relayed. Full
+  rule: [`10`](./10-repository-and-worktree-layout.md) §10.10.
 - **Trunk-based, with short-lived branches.** A branch that lives long enough to need a merge
   strategy has become a fork.
 - **Small, reviewable commits with a message that says why.** The diff already says what. The
