@@ -13,6 +13,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+### Added — repository (not vendored; `standards/VERSION` unchanged)
+
+- **`branch-location-guard/`:** shareable fail-closed git hooks enforcing Branching
+  location (`BRANCH_GUARD_BASE` only; WSL path translation; POSIX fallback; no-branch
+  mode for trunk-only repos; `Install-BranchGuard.ps1` plan/`-Apply`/`-Uninstall`;
+  GitHub branch-creation audit script; Pester + POSIX tests; `ROLLOUT.md` for private
+  repos). Committed hooks stay dormant until local `core.hooksPath=.githooks`.
+- **`AGENTS.md`:** Branching location rule pointing at the guard package (env-var base,
+  no hardcoded drive path).
+
 ### Fixed — repository (not vendored; `standards/VERSION` unchanged)
 
 - **`.github/workflows/standards-sync.yml` template:** the push step used

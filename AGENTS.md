@@ -1,5 +1,14 @@
 # AGENTS.md — working in this repository
 
+## Branching location
+
+Commits and pushes are allowed only from a linked worktree at
+`${BRANCH_GUARD_BASE}/<repo>/<worktree>`. Never from `${BRANCH_GUARD_BASE}/<repo>/root`,
+never outside `${BRANCH_GUARD_BASE}`. Fail closed. `BRANCH_GUARD_BASE` is an environment
+variable with no hardcoded default — if unset, the guard refuses. Enforcement lives in
+[`branch-location-guard/`](./branch-location-guard/) (committed `.githooks/`, activated
+locally via `Install-BranchGuard.ps1 -Apply`; inactive on CI/cloud unless installed).
+
 This file governs work on **`engineering-standards` itself**. It is not the file a consuming
 repo gets; that one is [`templates/AGENTS.md.template`](./templates/AGENTS.md.template).
 

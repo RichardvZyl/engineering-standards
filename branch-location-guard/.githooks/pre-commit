@@ -1,0 +1,23 @@
+#!/bin/sh
+# branch-location-guard: refuse commit unless location (or no-branch) policy passes.
+# Inactive until core.hooksPath=.githooks is set locally (see Install-BranchGuard.ps1).
+# CI and cloud VMs do not set that config, so these committed hooks stay dormant there.
+set -eu
+DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+
+run_ps1() {
+    exe=$1
+    shift
+    "$exe" -NoProfile -File "$DIR/Invoke-BranchLocationGuard.ps1" "$@"
+}
+
+if command -v pwsh >/dev/null 2>&1; then
+    run_ps1 pwsh || exit $?
+elif command -v powershell.exe >/dev/null 2>&1; then
+    run_ps1 powershell.exe || exit $?
+elif command -v pwsh.exe >/dev/null 2>&1; then
+    run_ps1 pwsh.exe || exit $?
+else
+    sh "$DIR/branch-location-guard.sh" || exit $?
+fi
+exit 0

@@ -1,0 +1,27 @@
+#!/bin/sh
+# no-branch mode: after checkout, refuse (exit 1) when not on the default branch.
+# Limits: git has already switched branches; this cannot undo the checkout. It
+# fails the hook so the operator notices. There is no pre-checkout hook.
+# `git worktree add` also cannot be blocked by a hook; see README.
+set -eu
+
+mode=${BRANCH_GUARD_MODE:-}
+if [ -z "$mode" ] && command -v git >/dev/null 2>&1; then
+    mode=$(git config --get branchGuard.mode 2>/dev/null || true)
+fi
+mode=$(printf '%s' "$mode" | tr '[:upper:]' '[:lower:]')
+case $mode in
+    no-branch|nobranch) ;;
+    *) exit 0 ;;
+esac
+
+DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+
+if command -v pwsh >/dev/null 2>&1; then
+    pwsh -NoProfile -File "$DIR/Invoke-BranchLocationGuard.ps1" -Mode NoBranch || exit $?
+elif command -v powershell.exe >/dev/null 2>&1; then
+    powershell.exe -NoProfile -File "$DIR/Invoke-BranchLocationGuard.ps1" -Mode NoBranch || exit $?
+else
+    BRANCH_GUARD_MODE=no-branch sh "$DIR/branch-location-guard.sh" || exit $?
+fi
+exit 0
