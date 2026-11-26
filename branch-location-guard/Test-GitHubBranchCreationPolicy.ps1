@@ -32,7 +32,14 @@ $owner, $name = $Repo.Split('/')
 Write-Host "=== Branch-creation policy audit: $Repo ==="
 
 # Default branch
-$repoJson = gh api "repos/$Repo" --jq '{default_branch: .default_branch, private: .private}' | ConvertFrom-Json
+$repoRaw = gh api "repos/$Repo" --jq '{default_branch: .default_branch, private: .private}' 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "VERDICT: undecidable — cannot read repo metadata for $Repo."
+    Write-Host "Detail: $repoRaw"
+    Write-Host 'The local no-branch hooks remain the clone-side enforcement when installed.'
+    exit 2
+}
+$repoJson = $repoRaw | ConvertFrom-Json
 $default = $repoJson.default_branch
 Write-Host "Default branch: $default"
 Write-Host "Private:        $($repoJson.private)"
