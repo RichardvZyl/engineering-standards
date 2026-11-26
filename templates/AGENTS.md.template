@@ -21,7 +21,22 @@ This repository follows the vendored standards in [`standards/`](./standards/). 
 Change it upstream in `engineering-standards`.
 
 Start with [`standards/00-response-and-collaboration.md`](./standards/00-response-and-collaboration.md);
-it governs how everything else is delivered.
+it governs how everything else is delivered. **Conventions first:** if the table below is
+empty, the only allowed first work is a draft PR that fills it
+([`00`](./standards/00-response-and-collaboration.md)).
+
+### Working conventions (required before other work)
+
+| Topic | This repository |
+|---|---|
+| Layout | <!-- e.g. Repos layout: `<base>/<owner>/<repo>/root` + sibling worktrees --> |
+| Default branch | <!-- e.g. main --> |
+| Branch naming | <!-- e.g. `cursor/<desc>` / `feat/...` --> |
+| Commit style | <!-- e.g. why-focused; cite planning ids --> |
+| Build / test / publish | <!-- exact commands --> |
+| Labels | <!-- PR / issue labels that matter --> |
+| Review / approval gates | <!-- who must approve; required checks --> |
+| No-branch status | <!-- `no` = ordinary Repos layout; `yes` = trunk-only, never create other branches --> |
 
 <!-- Record any DEPARTURE from the standards here, with a link to the ADR that decided it.
      A departure that is not written down reads as a mistake to the next reader. -->
@@ -29,6 +44,9 @@ it governs how everything else is delivered.
 | Standard | Departure | ADR |
 |---|---|---|
 | <!-- e.g. 02 § isolation --> | <!-- what we do instead --> | <!-- docs/adr/NNNN --> |
+
+<!-- Optional: install the branch-location guard (engineering-standards PR #39 /
+     `branch-location-guard/`) for local enforcement of no-stray-branches (10.10). -->
 
 ## Domain routing
 

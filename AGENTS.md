@@ -6,6 +6,35 @@ repo gets; that one is [`templates/AGENTS.md.template`](./templates/AGENTS.md.te
 Read this before editing anything. The failure modes here are unusual, and none of them
 announce themselves.
 
+## Standing rules (agents)
+
+### A — No stray branches
+
+Agents never create branches in **no-branch** repositories, even when a GitHub ruleset
+bypass, admin role, or connector identity would allow it — bypass rights are never
+permission. In every other repository, branches exist only as linked worktrees under the
+Repos layout (`${BRANCH_GUARD_BASE}/<repo>/root` plus sibling worktree folders and
+`fully-merged`); no `backup/`, `wip/`, `snapshot/`, `preserve/`, or ad-hoc parking branches.
+
+**This estate's no-branch repositories:** `grok-bot-workspace`, the development-root
+repository (the git repo at the Development folder root), and the drive-root repository.
+Context: `grok-bot-workspace` has a "Restrict branch creation to main" ruleset yet still
+accumulated many non-default branches via admin bypass — that must not recur.
+
+**Enforcement:** standard [`10`](./standards/10-repository-and-worktree-layout.md) §10.10;
+local hooks in the branch-location guard package (draft
+[PR #39](https://github.com/RichardvZyl/engineering-standards/pull/39)).
+
+### B — Conventions first
+
+Before starting any work in a repository, an agent must know that repository's conventions
+(layout, default branch, branch naming, commit style, build/test/publish path, labels,
+review/approval gates, no-branch status) and they must be documented in the repository
+(`AGENTS.md` or equivalent). If they are not documented, the first and only work allowed is
+a draft PR documenting them; stop until that exists. Binding text:
+[`standards/00`](./standards/00-response-and-collaboration.md) (Conventions first) and
+[`standards/07`](./standards/07-repo-layout.md).
+
 ---
 
 ## What this repository is

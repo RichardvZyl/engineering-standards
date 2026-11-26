@@ -10,6 +10,21 @@
 How an assistant working in this repository should answer. This is the first standard because
 every other one is delivered through it.
 
+## Conventions first
+
+**Rule.** Before any other work in a repository, an agent must know that repository's
+conventions — layout, default branch, branch naming, commit style, build/test/publish path,
+labels, review and approval gates, and whether the repository is trunk-only (no-branch) —
+and those conventions must be documented in the repository (`AGENTS.md` or an equivalent the
+repository points at).
+
+If they are not documented, the **first and only** work allowed is a draft pull request that
+documents them. Stop until that document exists. Guessing conventions is not a substitute.
+
+Project-specific values live in `AGENTS.md`; the shared how-we-work rules live in
+[`standards/`](./) ([`07`](./07-repo-layout.md)). Branch and worktree placement is
+[`10`](./10-repository-and-worktree-layout.md) §10.10.
+
 ## The rule
 
 **Density, not brevity — cut words, never options.**
