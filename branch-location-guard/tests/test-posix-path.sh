@@ -1,5 +1,5 @@
 #!/bin/sh
-# Small POSIX test for branch-location-guard.sh path translation and decisions.
+# POSIX tests: WSL translation, unset base, root leaf, primary checkout, no-branch, log mode.
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
@@ -17,41 +17,50 @@ assert_exit() {
         printf 'FAIL: expected exit %s got %s\n  cmd: %s\n  out: %s\n' "$want" "$code" "$*" "$out" >&2
         fail=$((fail + 1))
     else
-        printf 'ok: exit %s (%s)\n' "$want" "$*"
+        printf 'ok: exit %s\n' "$want"
     fi
 }
 
-# Unset base -> refuse
 assert_exit 1 \
     BRANCH_GUARD_BASE= \
     BRANCH_GUARD_TOPLEVEL=/mnt/e/Development/repositories/Owner/demo/feature \
-    BRANCH_GUARD_MODE=location
+    BRANCH_GUARD_MODE=enforce \
+    BRANCH_GUARD_GIT_DIR=/tmp/wt/.git \
+    BRANCH_GUARD_COMMON_DIR=/tmp/main/.git
 
-# Worktree under base (WSL path vs Windows base) -> allow
 assert_exit 0 \
     BRANCH_GUARD_BASE='E:\Development\repositories\Owner' \
     BRANCH_GUARD_TOPLEVEL=/mnt/e/Development/repositories/Owner/demo/feature \
-    BRANCH_GUARD_MODE=location
+    BRANCH_GUARD_MODE=enforce \
+    BRANCH_GUARD_GIT_DIR=/mnt/e/Development/repositories/Owner/demo/root/.git/worktrees/feature \
+    BRANCH_GUARD_COMMON_DIR=/mnt/e/Development/repositories/Owner/demo/root/.git
 
-# root leaf -> refuse
 assert_exit 1 \
     BRANCH_GUARD_BASE='E:\Development\repositories\Owner' \
     BRANCH_GUARD_TOPLEVEL=/mnt/e/Development/repositories/Owner/demo/root \
-    BRANCH_GUARD_MODE=location
+    BRANCH_GUARD_MODE=enforce \
+    BRANCH_GUARD_GIT_DIR=/mnt/e/x/.git/worktrees/x \
+    BRANCH_GUARD_COMMON_DIR=/mnt/e/x/.git
 
-# outside base -> refuse
 assert_exit 1 \
     BRANCH_GUARD_BASE='E:\Development\repositories\Owner' \
-    BRANCH_GUARD_TOPLEVEL=/mnt/d/elsewhere/demo/feature \
-    BRANCH_GUARD_MODE=location
+    BRANCH_GUARD_TOPLEVEL=/mnt/e/Development/repositories/Owner/demo/feature \
+    BRANCH_GUARD_MODE=enforce \
+    BRANCH_GUARD_GIT_DIR=/mnt/e/Development/repositories/Owner/demo/feature/.git \
+    BRANCH_GUARD_COMMON_DIR=/mnt/e/Development/repositories/Owner/demo/feature/.git
 
-# no-branch allow
+assert_exit 0 \
+    BRANCH_GUARD_BASE='E:\Development\repositories\Owner' \
+    BRANCH_GUARD_TOPLEVEL=/mnt/e/Development/repositories/Owner/demo/root \
+    BRANCH_GUARD_MODE=log \
+    BRANCH_GUARD_GIT_DIR=/mnt/e/x/.git/worktrees/x \
+    BRANCH_GUARD_COMMON_DIR=/mnt/e/x/.git
+
 assert_exit 0 \
     BRANCH_GUARD_MODE=no-branch \
     BRANCH_GUARD_BRANCH=main \
     BRANCH_GUARD_DEFAULT_BRANCH=main
 
-# no-branch refuse
 assert_exit 1 \
     BRANCH_GUARD_MODE=no-branch \
     BRANCH_GUARD_BRANCH=feature \

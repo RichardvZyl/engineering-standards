@@ -1,8 +1,17 @@
 #!/bin/sh
 # branch-location-guard: refuse push unless location (or no-branch) policy passes.
-# Inactive until core.hooksPath=.githooks is set locally (see Install-BranchGuard.ps1).
+# Fail-closed stdin: git feeds ref lines on stdin; if stdin cannot be consumed, refuse.
+# Inactive until core.hooksPath=.githooks is set locally.
 set -eu
 DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+
+# Consume stdin from git. Empty stdin is allowed (no refs). An IO failure is not —
+# refuse rather than pushing while blind.
+if ! stdin_data=$(cat 2>/dev/null); then
+    printf 'branch-location-guard: REFUSED. cannot read pre-push stdin (fail closed).\n' >&2
+    exit 1
+fi
+: "${stdin_data}"
 
 run_ps1() {
     exe=$1

@@ -4,36 +4,38 @@
   Enforce branching location (or no-branch mode) for commit/push hooks.
 
 .DESCRIPTION
-  Location mode (default): allow only when the git toplevel is
-  ${BRANCH_GUARD_BASE}/<repo>/<worktree> with <worktree> not equal to "root".
-  BRANCH_GUARD_BASE must be set in the environment; there is no hardcoded default.
-  Fail closed.
+  Location (enforce|log): Get-Decision — outside-base, wrong-depth
+  BRANCH_GUARD_BASE/<repo>/<worktree>, refuse ROOT leaf (BRANCH_GUARD_ROOT_NAME),
+  refuse git-dir == common-dir. BRANCH_GUARD_BASE is required (no hardcoded default).
 
-  No-branch mode (BRANCH_GUARD_MODE=no-branch or git config branchGuard.mode):
-  allow only when the current branch is the repository default branch.
+  Mode:
+    enforce (default) — refuse on failure
+    log               — allow, but record repo leaf + decision when BRANCH_GUARD_LOG is set
+    no-branch         — only the default branch may be used
 
-  On WSL, Windows and /mnt/<letter>/ paths are normalised before comparison.
+  BRANCH_GUARD_LOG: when set, append "<repoLeaf> <decision>" (no full paths).
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('Location', 'NoBranch')]
+    [ValidateSet('enforce', 'log', 'no-branch', 'Location', 'NoBranch', 'Enforce', 'Log')]
     [string] $Mode,
 
-    # Injected for tests. Defaults to git rev-parse --show-toplevel.
     [string] $Toplevel,
 
-    # Injected for tests. Defaults to the current branch name.
     [AllowEmptyString()]
     [string] $CurrentBranch,
 
-    # Injected for tests. Defaults to the resolved default branch.
     [AllowEmptyString()]
     [string] $DefaultBranch,
 
-    # Injected for tests. Defaults to $env:BRANCH_GUARD_BASE.
     [string] $Base,
 
-    # When set, print Allow/Refuse and reason; still exit non-zero on refuse.
+    [string] $GitDir,
+
+    [string] $CommonDir,
+
+    [string] $RootName,
+
     [switch] $PassThru
 )
 
@@ -49,18 +51,33 @@ if ($PSBoundParameters.ContainsKey('Toplevel') -and $Toplevel) { $decisionParams
 if ($PSBoundParameters.ContainsKey('CurrentBranch')) { $decisionParams.CurrentBranch = $CurrentBranch }
 if ($PSBoundParameters.ContainsKey('DefaultBranch')) { $decisionParams.DefaultBranch = $DefaultBranch }
 if ($PSBoundParameters.ContainsKey('Base')) { $decisionParams.Base = $Base }
+if ($PSBoundParameters.ContainsKey('GitDir') -and $GitDir) { $decisionParams.GitDir = $GitDir }
+if ($PSBoundParameters.ContainsKey('CommonDir') -and $CommonDir) { $decisionParams.CommonDir = $CommonDir }
+if ($PSBoundParameters.ContainsKey('RootName') -and $RootName) { $decisionParams.RootName = $RootName }
 
 $result = Invoke-BranchGuardDecision @decisionParams
 
+Write-BranchGuardLog -RepoLeaf $result.RepoLeaf -Decision $result.Decision
+
+$resolvedMode = $result.Mode
+$shouldRefuse = (-not $result.Allowed) -and ($resolvedMode -ne 'log')
+
 if ($PassThru) {
     [pscustomobject]@{
-        Allowed = $result.Allowed
-        Reason  = $result.Reason
-        Mode    = $result.Mode
+        Allowed  = (-not $shouldRefuse)
+        Reason   = $result.Reason
+        Mode     = $resolvedMode
+        Code     = $result.Code
+        Decision = $result.Decision
+        RepoLeaf = $result.RepoLeaf
     }
 }
 
 if (-not $result.Allowed) {
+    if ($resolvedMode -eq 'log') {
+        [Console]::Error.WriteLine("branch-location-guard: LOG $($result.Decision) — $($result.Reason)")
+        exit 0
+    }
     [Console]::Error.WriteLine("branch-location-guard: REFUSED. $($result.Reason)")
     exit 1
 }

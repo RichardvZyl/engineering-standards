@@ -1,97 +1,84 @@
 # Branch-location guard
 
-Fail-closed local git hooks that enforce the **Branching location** rule:
+Fail-closed local git hooks that enforce the **Branching location** rule via
+`Get-Decision`:
 
-> Commits and pushes only from a linked worktree at
-> `${BRANCH_GUARD_BASE}/<repo>/<worktree>`. Never from
-> `${BRANCH_GUARD_BASE}/<repo>/root`. Never outside the base.
+1. Refuse outside `BRANCH_GUARD_BASE`
+2. Refuse wrong depth — must be `${BRANCH_GUARD_BASE}/<repo>/<worktree>`
+3. Refuse the root leaf (`BRANCH_GUARD_ROOT_NAME`, default `root`)
+4. Refuse when `git-dir == common-dir` (primary checkout, not a linked worktree)
 
 `BRANCH_GUARD_BASE` comes **only** from the environment. There is no hardcoded
-default. If it is unset, the guard refuses with a message telling you to set it.
+default. If unset, the guard refuses.
 
 ## What ships
 
 | Path | Role |
 |---|---|
-| `.githooks/` | Committable hooks + decision scripts (`pre-commit`, `pre-push`, `post-checkout`, `reference-transaction`, PowerShell + POSIX helpers) |
-| `Install-BranchGuard.ps1` | Plan-only by default; `-Apply` sets local `core.hooksPath=.githooks`; `-Uninstall` clears it |
+| `.githooks/` | Committable hooks + `Get-Decision` scripts |
+| `Install-BranchGuard.ps1` | Plan-only by default; `-Apply` sets local `core.hooksPath=.githooks` |
 | `Test-GitHubBranchCreationPolicy.ps1` | Read-only audit of GitHub branch rules/rulesets |
-| `tests/` | Pester + POSIX sh tests |
+| `tests/` | Original five `Get-Decision` Pester cases + WSL / unset-base / no-branch / log |
 | `Run-Tests.ps1` | Runs tests; skips PowerShell tests gracefully if Pester is missing |
 | `ROLLOUT.md` | Private-repo inventory and per-repo follow-up steps |
 
 ## Activation (local only)
 
-Committed hooks are **not** active until local config points at them:
-
 ```powershell
-pwsh ./Install-BranchGuard.ps1              # plan
-pwsh ./Install-BranchGuard.ps1 -Apply       # set core.hooksPath=.githooks
-pwsh ./Install-BranchGuard.ps1 -Apply -Mode NoBranch
+pwsh ./Install-BranchGuard.ps1                         # plan
+pwsh ./Install-BranchGuard.ps1 -Apply                  # enforce (default)
+pwsh ./Install-BranchGuard.ps1 -Apply -Mode log
+pwsh ./Install-BranchGuard.ps1 -Apply -Mode no-branch
 pwsh ./Install-BranchGuard.ps1 -Uninstall
 ```
 
-`core.hooksPath` is **local** git config. It is not pushed. CI runners and cloud
-agent VMs therefore do **not** run these hooks unless someone deliberately
-installs them there (do not).
+`core.hooksPath` is **local** git config and is not pushed. CI and cloud agent
+VMs therefore do **not** run these hooks unless someone deliberately installs
+them there (do not).
 
-When `-Apply` would replace an existing hook file that differs, the previous
-file is kept as `<name>.prev-YYYYMMDD`. The installer never uses the names
-`backup` or `.bak`.
+When `-Apply` would replace a differing hook file, the previous file is kept as
+`<name>.prev-YYYYMMDD` (never `backup` / `.bak`).
 
 ## Environment
 
 | Variable | Required | Meaning |
 |---|---|---|
-| `BRANCH_GUARD_BASE` | Yes (location mode) | Owner folder that contains each `<repo>/root` and `<repo>/<worktree>` |
-| `BRANCH_GUARD_MODE` | No | `location` (default) or `no-branch` |
-| `branchGuard.mode` | No | Local git config; same values; set by the installer |
+| `BRANCH_GUARD_BASE` | Yes (enforce/log) | Owner folder containing each `<repo>/<worktree>` |
+| `BRANCH_GUARD_MODE` | No | `enforce` (default), `log`, or `no-branch` |
+| `BRANCH_GUARD_ROOT_NAME` | No | Leaf name refused as the base checkout (default `root`) |
+| `BRANCH_GUARD_LOG` | No | Append-only log path; writes `<repoLeaf> <decision>` only |
+| `branchGuard.mode` | No | Local git config mirror of mode (set by installer) |
+
+### Modes
+
+- **enforce** — refuse on `Get-Decision` failure (default, fail closed)
+- **log** — run the same checks, record leaf + decision, allow the operation
+- **no-branch** — only the repository default branch may be used (inverted guard)
 
 ### WSL
 
-When the hook runs inside WSL (`WSL_DISTRO_NAME` set, or `/proc/version` contains
-`microsoft`), `/mnt/<letter>/...` paths are translated to `<LETTER>:\...` (via
-`wslpath -w` when available) before comparison. A Windows-style
-`BRANCH_GUARD_BASE` is accepted the same way. If `pwsh` / `powershell.exe` is
-unreachable, the POSIX `branch-location-guard.sh` implements the same decision
-so WSL clones are not blocked by missing PowerShell tooling.
+When inside WSL (`WSL_DISTRO_NAME` or `/proc/version` contains `microsoft`),
+`/mnt/<letter>/...` paths are translated to `<LETTER>:\...` before comparison.
+If `pwsh` is unreachable, POSIX `branch-location-guard.sh` implements the same
+decision.
 
-## No-branch mode
+### pre-push stdin
 
-Some repositories must not grow feature branches or worktrees (estate policy):
-the development-root git repo, the drive-root git repo, and `grok-bot-workspace`.
-For those, install with `-Mode NoBranch`:
+`pre-push` fail-closes if git's ref stdin cannot be consumed.
 
-- `pre-commit` / `pre-push` refuse unless the current branch is the default branch
-- `post-checkout` exits non-zero on a non-default branch (after the fact)
-- `reference-transaction` refuses updates to non-default `refs/heads/*`
+## No-branch targets
 
-### Limits (documented, not papered over)
-
-- Git has **no** pre-checkout and **no** pre-`worktree add` hook.
-  `post-checkout` can only fail loudly after the fact.
-- `reference-transaction` blocks many branch ref updates but is not a substitute
-  for GitHub rulesets; run `Test-GitHubBranchCreationPolicy.ps1` to audit remotes.
-- Detached HEAD is refused in no-branch mode.
-
-## Roll a copy into another repo
-
-1. Copy this package's `.githooks/` directory to the target repo root as `.githooks/`.
-2. Optionally copy `Install-BranchGuard.ps1` next to it (or under `scripts/`).
-3. Open a **draft** PR with those files.
-4. On each developer machine: set `BRANCH_GUARD_BASE`, then
-   `pwsh ./Install-BranchGuard.ps1 -Apply` (or `-Mode NoBranch` where required).
-
-See [`ROLLOUT.md`](./ROLLOUT.md) for the private-repo list and follow-up checklist.
+Development-root git repo, drive-root git repo, and `grok-bot-workspace`: install
+with `-Mode no-branch`. See README limits: no pre-checkout / pre-`worktree add`
+hook; `post-checkout` and `reference-transaction` are best-effort.
 
 ## Tests
 
 ```powershell
 pwsh ./Run-Tests.ps1
-# or directly:
-pwsh -Command "Invoke-Pester -Script ./tests/BranchLocationGuard.Tests.ps1"
 sh ./tests/test-posix-path.sh
 ```
 
-On Linux, tests run when `pwsh` is available; `Run-Tests.ps1` exits 0 with a skip
-message if Pester is not installed. The POSIX script runs with any POSIX `sh`.
+## Rollout
+
+See [`ROLLOUT.md`](./ROLLOUT.md). Follow-up agents copy `.githooks/` via draft PRs only.

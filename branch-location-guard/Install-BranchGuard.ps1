@@ -22,8 +22,8 @@ param(
     [Parameter(ParameterSetName = 'Uninstall')]
     [switch] $Uninstall,
 
-    [ValidateSet('Location', 'NoBranch')]
-    [string] $Mode = 'Location',
+    [ValidateSet('enforce', 'log', 'no-branch', 'Location', 'NoBranch')]
+    [string] $Mode = 'enforce',
 
     # Repository root that contains (or will contain) .githooks/. Defaults to cwd.
     [string] $RepoRoot,
@@ -80,7 +80,11 @@ try {
         return
     }
 
-    $modeValue = if ($Mode -eq 'NoBranch') { 'no-branch' } else { 'location' }
+    $modeValue = switch -Regex ($Mode) {
+        '^(?i)no-?branch$' { 'no-branch'; break }
+        '^(?i)log$' { 'log'; break }
+        default { 'enforce' }
+    }
 
     Write-PlanLine "Repo:          $RepoRoot"
     Write-PlanLine "Source hooks:  $SourceHooks"
@@ -154,7 +158,7 @@ try {
     git config --local core.hooksPath .githooks
     git config --local branchGuard.mode $modeValue
     Write-Host "Applied: core.hooksPath=.githooks, branchGuard.mode=$modeValue" -ForegroundColor Green
-    if ($Mode -eq 'Location') {
+    if ($modeValue -ne 'no-branch') {
         Write-Host 'Remember: set BRANCH_GUARD_BASE in your environment (required; no default).' -ForegroundColor Yellow
     }
 }
