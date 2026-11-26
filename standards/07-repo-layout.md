@@ -67,10 +67,12 @@ telling a newcomer anything; the first thing they see should be the shape of the
 Every repository has one. It carries the things that are **true of this project only** —
 domain, tenancy model, engine and version, deployment topology, local setup, the traps — plus a
 **path → domain-doc routing table** telling a reader which document governs which directory.
-It also records the **working conventions an agent must know before starting** — layout,
-default branch, branch naming, commit style, build/test/publish path, labels, review and
-approval gates, and no-branch status. If those are missing, the only allowed first work is a
-draft PR that adds them ([`00`](./00-response-and-collaboration.md) — Conventions first).
+It also records the **working conventions an agent must know and observe** — layout, default
+branch, branch naming, commit style, build/test/publish path, labels, review and approval
+gates, and no-branch status — and names the **sole exception authorizer** whose direct word
+is required to break any of them. Documented-but-ignored is a violation. If those conventions
+are missing, the only allowed first work is a draft PR that adds them
+([`00`](./00-response-and-collaboration.md) — Conventions first).
 
 | Path | Domain doc |
 |---|---|

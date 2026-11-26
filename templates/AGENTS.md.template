@@ -21,9 +21,13 @@ This repository follows the vendored standards in [`standards/`](./standards/). 
 Change it upstream in `engineering-standards`.
 
 Start with [`standards/00-response-and-collaboration.md`](./standards/00-response-and-collaboration.md);
-it governs how everything else is delivered. **Conventions first:** if the table below is
-empty, the only allowed first work is a draft PR that fills it
+it governs how everything else is delivered. **Conventions first:** agents must **know and
+observe** the table below (especially git conventions); documented-but-ignored is a violation.
+If the table is empty, the only allowed first work is a draft PR that fills it
 ([`00`](./standards/00-response-and-collaboration.md)).
+
+**Sole exception authorizer:** <!-- REPLACE: the one human whose *direct* word may authorize
+breaking a convention or Rule A. Relayed by another agent/bot/bypass/tool does not count. -->
 
 ### Working conventions (required before other work)
 

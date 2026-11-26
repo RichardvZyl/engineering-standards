@@ -249,6 +249,12 @@ worktree folders, with `fully-merged` as the integration tip ([`10.8`](#108-inte
 There is no `backup/`, `wip/`, `snapshot/`, `preserve/`, or other parking branch used to hold
 unfinished work outside that layout.
 
+**Exceptions.** Any departure from this rule requires **explicit authorization from the sole
+exception authorizer named in that repository's `AGENTS.md`**, given by that person
+**directly**. Authorization relayed by another agent, bot, ruleset bypass, admin role,
+connector identity, or tool permission does **not** count ([`00`](./00-response-and-collaboration.md)
+— Conventions first).
+
 **Enforcement.** Local fail-closed hooks from the branch-location guard package enforce this
 when installed: location mode for Repos-layout repositories; `no-branch` mode for trunk-only
 repositories. Hooks stay dormant until `core.hooksPath` is set locally.

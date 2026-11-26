@@ -38,11 +38,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 - `standards/10-repository-and-worktree-layout.md` — **No stray branches (10.10):** trunk-only
   (no-branch) repositories never receive non-default branches from an agent; bypass/admin
   rights are not permission. Other repositories keep branches only as Repos-layout worktrees
-  beside `root/` plus `fully-merged`; no parking branches. Cross-links the branch-location
+  beside `root/` plus `fully-merged`; no parking branches. Exceptions only from the sole
+  exception authorizer named in `AGENTS.md`, given directly. Cross-links the branch-location
   guard as local enforcement.
 - `standards/00-response-and-collaboration.md` — **Conventions first:** before any other work,
-  the repository's conventions must be known and documented in `AGENTS.md` (or equivalent); if
-  missing, the only allowed work is a draft PR that documents them.
+  conventions must be **known and observed** (especially git); documented-but-ignored is a
+  violation; if missing, the only allowed work is a draft PR that documents them; exceptions
+  require direct authorization from the sole exception authorizer named in `AGENTS.md`
+  (not relayed by agent/bot/bypass/tool).
 
 ### Changed — `standards/`
 
@@ -52,8 +55,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ### Added — repository (not vendored)
 
-- Kit `AGENTS.md` and `templates/AGENTS.md.template` carry the standing rules and this estate's
-  no-branch instances; point at the branch-location guard package (draft
+- Kit `AGENTS.md` and `templates/AGENTS.md.template` carry the standing rules, name Richard as
+  sole exception authorizer (direct only), and list this estate's no-branch instances; point at
+  the branch-location guard package (draft
   [PR #39](https://github.com/RichardvZyl/engineering-standards/pull/39)) for Rule A enforcement.
 
 ## [0.15.0] — 2026-11-22
