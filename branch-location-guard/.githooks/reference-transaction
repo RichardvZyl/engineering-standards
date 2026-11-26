@@ -1,0 +1,54 @@
+#!/bin/sh
+# no-branch mode: refuse ref updates that create or move non-default heads.
+# Invoked by git with "prepared" / "committed" / "aborted". Only "prepared" may force-fail.
+# Limits: forces that rewrite the default branch itself are still subject to other policy;
+# this only blocks non-default refs/heads/* updates when mode is no-branch.
+# `git worktree add` is not covered here; see README.
+set -eu
+
+[ "${1:-}" = "prepared" ] || exit 0
+
+mode=${BRANCH_GUARD_MODE:-}
+if [ -z "$mode" ] && command -v git >/dev/null 2>&1; then
+    mode=$(git config --get branchGuard.mode 2>/dev/null || true)
+fi
+mode=$(printf '%s' "$mode" | tr '[:upper:]' '[:lower:]')
+case $mode in
+    no-branch|nobranch) ;;
+    *) exit 0 ;;
+esac
+
+default=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null || true)
+case $default in
+    refs/remotes/origin/*) default=${default#refs/remotes/origin/} ;;
+    *)
+        default=
+        for c in main master; do
+            if git show-ref --verify --quiet "refs/remotes/origin/$c" 2>/dev/null \
+                || git show-ref --verify --quiet "refs/heads/$c" 2>/dev/null; then
+                default=$c
+                break
+            fi
+        done
+        [ -n "$default" ] || default=main
+        ;;
+esac
+
+# stdin: <old> <new> <ref> per line
+while IFS= read -r line || [ -n "$line" ]; do
+    [ -n "$line" ] || continue
+    # shellcheck disable=SC2086
+    set -- $line
+    ref=${3:-}
+    case $ref in
+        refs/heads/*)
+            name=${ref#refs/heads/}
+            if [ "$name" != "$default" ]; then
+                printf 'branch-location-guard: REFUSED. no-branch mode blocks ref update for %s (default is %s).\n' "$ref" "$default" >&2
+                exit 1
+            fi
+            ;;
+    esac
+done
+
+exit 0

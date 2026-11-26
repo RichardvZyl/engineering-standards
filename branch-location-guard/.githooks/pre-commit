@@ -1,0 +1,26 @@
+#!/bin/sh
+# Branch-location guard (pre-commit). Fails closed: if the guard cannot run, the operation is refused.
+# Inactive until core.hooksPath=.githooks is set locally (see Install-BranchGuard.ps1).
+set -eu
+DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+guard="$DIR/Invoke-BranchLocationGuard.ps1"
+[ -f "$guard" ] || { echo "BRANCH LOCATION GUARD: guard script missing; refusing." >&2; exit 1; }
+
+run_ps1() {
+    exe=$1
+    shift
+    "$exe" -NoProfile -ExecutionPolicy Bypass -File "$guard" -Hook pre-commit "$@" </dev/null || exit 1
+}
+
+if command -v pwsh >/dev/null 2>&1; then
+    run_ps1 pwsh
+elif command -v pwsh.exe >/dev/null 2>&1; then
+    run_ps1 pwsh.exe
+elif command -v powershell.exe >/dev/null 2>&1; then
+    # Original preferred powershell.exe; keep as fallback after pwsh (approved WSL/tooling path).
+    gpath=$(cygpath -w "$guard" 2>/dev/null || echo "$guard")
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$gpath" -Hook pre-commit </dev/null || exit 1
+else
+    sh "$DIR/branch-location-guard.sh" || exit 1
+fi
+exit 0

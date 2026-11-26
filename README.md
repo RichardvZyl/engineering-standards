@@ -23,6 +23,7 @@ Drift you can see in a PR is a decision. Drift you cannot see is just entropy.
 |---|---|---|
 | `standards/` | **Yes** — the synced set | The conventions themselves. Read-only in consuming repos. |
 | `templates/` | No — seeded once | Starting points a repo edits and owns: `AGENTS.md`, ADR scaffolding, domain-doc template, PR template. Optional AI-tooling notes under `templates/docs/ai/` (APM, agentrc, AGT, Perseus/Vault) — suggestions, not conventions. |
+| `branch-location-guard/` | No — copied per repo | Fail-closed `.githooks/` enforcing Branching location (`BRANCH_GUARD_BASE`); see its `ROLLOUT.md`. |
 | `scripts/` | No | `Sync-Standards.ps1` · `Test-NoProprietaryLeak.ps1` · `Test-StandardsIntegrity.ps1` |
 | `.github/workflows/` | `standards-sync.yml` only | Sync opens the drift PR downstream; verify runs here. |
 

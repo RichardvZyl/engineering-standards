@@ -1,0 +1,6 @@
+# Hooks and POSIX helpers must stay LF so /bin/sh on Linux/WSL can parse them.
+*.sh text eol=lf
+pre-commit text eol=lf
+pre-push text eol=lf
+post-checkout text eol=lf
+reference-transaction text eol=lf
