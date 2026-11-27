@@ -28,6 +28,26 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
   used to build `standards-sync` from that branch, so the standards-only sync PR carried its
   unrelated commits.
 
+## [0.16.1] — 2026-11-27
+
+> **Patch — `standards/VERSION` `0.16.0` → `0.16.1`.** No rule was added, removed, or
+> tightened. The standards set gains an agent-skill projection. A repository that does not
+> load the skills remains compliant.
+
+### Added — `standards/`
+
+- `standards/skills/` — one `SKILL.md` per standards file, plus the router
+  `apply-engineering-standards`. A skill is the trigger and the order of work. The numbered
+  file stays the rule. The projection is vendored with `standards/` because that is the tree
+  the sync already mirrors. See [`standards/skills/README.md`](standards/skills/README.md).
+
+### Changed — repository (not vendored)
+
+- `scripts/Test-StandardsIntegrity.ps1` — every standard has one skill; a skill opens with
+  frontmatter and still carries the vendoring header.
+- `scripts/Link-StandardsSkills.ps1` — links each skill into a harness directory. Never copies.
+- `README.md`, `AGENTS.md`, and `templates/AGENTS.md.template` point at the projection.
+
 ## [0.16.0] — 2026-11-26
 
 > **Minor — `standards/VERSION` `0.15.0` → `0.16.0`.** Adds **No stray branches** (10.10) and
