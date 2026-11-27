@@ -22,8 +22,9 @@ Drift you can see in a PR is a decision. Drift you cannot see is just entropy.
 | Path | Synced downstream? | Purpose |
 |---|---|---|
 | `standards/` | **Yes** — the synced set | The conventions themselves. Read-only in consuming repos. |
+| `standards/skills/` | **Yes** — inside `standards/` | Agent-skill projection. The numbered file stays the rule. |
 | `templates/` | No — seeded once | Starting points a repo edits and owns: `AGENTS.md`, ADR scaffolding, domain-doc template, PR template. Optional AI-tooling notes under `templates/docs/ai/` (APM, agentrc, AGT, Perseus/Vault) — suggestions, not conventions. |
-| `scripts/` | No | `Sync-Standards.ps1` · `Test-NoProprietaryLeak.ps1` · `Test-StandardsIntegrity.ps1` |
+| `scripts/` | No | `Sync-Standards.ps1` · `Test-NoProprietaryLeak.ps1` · `Test-StandardsIntegrity.ps1` · `Link-StandardsSkills.ps1` |
 | `.github/workflows/` | `standards-sync.yml` only | Sync opens the drift PR downstream; verify runs here. |
 
 ### The standards set
@@ -58,6 +59,16 @@ Drift you can see in a PR is a decision. Drift you cannot see is just entropy.
 | `Test-StandardsIntegrity.ps1` | Vendoring header on every standard, valid semver, resolvable relative links, ADR index consistency. |
 
 ---
+
+## Agent skills
+
+[`standards/skills/`](standards/skills/README.md) is the same conventions in the form a harness
+loads on demand. One skill per standards file, plus the router
+[`apply-engineering-standards`](standards/skills/apply-engineering-standards/SKILL.md).
+The harness indexes each description. On a match it loads that skill, and the skill's first
+step is to read the numbered file. If they disagree, the numbered file wins.
+
+Link the directories into the harness. Do not copy them.
 
 ## Using it
 

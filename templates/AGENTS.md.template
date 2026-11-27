@@ -132,6 +132,14 @@ owning document, permanent, never renumbered, and cited in commit messages.
 - Write a query against tenant-scoped data without a tenant predicate.
 - Edit anything under `standards/`.
 
+## Agent skills
+
+The conventions are also vendored as agent skills under
+[`standards/skills/`](./standards/skills/README.md). Start from
+[`apply-engineering-standards`](./standards/skills/apply-engineering-standards/SKILL.md)
+and load only the skills the task matches. The numbered file remains the rule.
+Link those directories into the harness; do not copy them.
+
 ## Durable references (standards 09) — two hard rules
 
 **Never write an absolute path.** Not in docs, ADRs, `AGENTS.md`, config, scripts, commit messages or

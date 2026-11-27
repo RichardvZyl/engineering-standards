@@ -94,8 +94,10 @@ three", the answer is wrong.
 
 ## Editing `standards/`
 
-- Every file under `standards/` opens with the read-only vendoring header, verbatim. A file
+- Every file under `standards/` carries the read-only vendoring header, verbatim. A file
   without it will be edited downstream by someone who had no way of knowing better.
+  `standards/skills/*/SKILL.md` is the exception to position only: frontmatter is at byte 0,
+  because a harness will not load a skill otherwise, and the header follows immediately.
 - A change to `standards/**` requires a `standards/VERSION` bump and a `CHANGELOG.md` entry.
   The sync PR title is built from `VERSION`; without the bump, downstream sees nothing.
 - Each new `standards/` version gets its own dated `CHANGELOG.md` block. **Never fold a rule
@@ -105,6 +107,18 @@ three", the answer is wrong.
   fifteen that are skimmed.
 - Write rules as assertions in the present tense — "Money is `decimal`" — not as advice.
   Advice invites negotiation in a code review; a rule does not.
+
+## Standards as skills
+
+`standards/skills/` is the agent-facing projection of the numbered files, vendored with them.
+A skill says when to load a standard and the order to apply it. It does not own the rule.
+
+- Change a rule in the numbered file. Change the matching skill in the same commit when its
+  trigger, order of work, or a reminder no longer matches.
+- If they disagree, the numbered file wins and the skill is the defect.
+- Do not add a standards markdown file without a skill. The integrity check rejects the gap.
+- Do not paste a second copy of a rule under `standards/skills/`. The database review baseline
+  stays the only detection procedure, reached through its own skill.
 
 ## Editing `templates/`
 

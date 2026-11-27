@@ -9,9 +9,10 @@
     The leak guard (Test-NoProprietaryLeak.ps1) decides what must NOT be in the repository.
     This decides what MUST be true of what is:
 
-      1. Vendoring header - every file under standards/ opens with the read-only header.
+      1. Vendoring header - every file under standards/ carries the read-only header.
          A vendored file without it gets edited downstream by someone with no way of knowing
-         better, and that edit is lost at the next sync.
+         better, and that edit is lost at the next sync. A SKILL.md opens with YAML frontmatter,
+         which a harness requires at byte 0; the header follows it and must still be present.
       2. VERSION - present and valid semver. The sync PR title is built from it.
       3. Relative links - every relative markdown link resolves to a file that exists.
          templates/ is EXCLUDED (its links resolve after seeding into a consuming repo) and
@@ -19,6 +20,9 @@
          links resolve only in their original home). Both are correctly broken in place.
       4. ADR index - if docs/adr/ exists, every record has a row in its README and every row
          points at a record that exists.
+      5. Skill projection - standards/skills holds one SKILL.md per standards markdown file
+         outside that directory, plus exactly one router. Each skill names its standard, links
+         it, and is linked from standards/skills/README.md. Nothing else lives in that tree.
 
 .PARAMETER Path
     Repository root. Defaults to the parent of this script's directory.
@@ -58,9 +62,16 @@ if (Test-Path -LiteralPath $standardsPath) {
     $standardsFiles = @(Get-ChildItem -LiteralPath $standardsPath -Recurse -File -Filter '*.md')
 
     foreach ($file in $standardsFiles) {
-        $head = (Get-Content -LiteralPath $file.FullName -TotalCount 8) -join "`n"
+        $relative = ([System.IO.Path]::GetRelativePath($standardsPath, $file.FullName)) -replace '\\', '/'
+        $isSkill = ($file.Name -eq 'SKILL.md') -and $relative.StartsWith('skills/')
+        $take = if ($isSkill) { 40 } else { 8 }
+        $headLines = @(Get-Content -LiteralPath $file.FullName -TotalCount $take)
+        $head = $headLines -join "`n"
         if ($head -notmatch [regex]::Escape($headerMarker)) {
-            Add-Failure "Missing vendoring header: standards/$($file.Name)"
+            Add-Failure "Missing vendoring header: standards/$relative"
+        }
+        if ($isSkill -and ($headLines.Count -eq 0 -or $headLines[0] -ne '---')) {
+            Add-Failure "Skill must open with YAML frontmatter: standards/$relative"
         }
     }
 }
@@ -170,6 +181,112 @@ if (Test-Path -LiteralPath $adrPath) {
 }
 
 $checked['ADR records'] = $adrCount
+
+
+# --- 5. Skill projection ------------------------------------------------------
+
+$skillRoot = Join-Path $standardsPath 'skills'
+$skillReadme = Join-Path $skillRoot 'README.md'
+$skillCount = 0
+
+if (-not (Test-Path -LiteralPath $skillRoot)) {
+    Add-Failure 'standards/skills/ is missing. Each standard needs an agent skill.'
+}
+else {
+    $expected = @{}
+    foreach ($file in $standardsFiles) {
+        $relative = ([System.IO.Path]::GetRelativePath($standardsPath, $file.FullName)) -replace '\\', '/'
+        if ($relative.StartsWith('skills/')) { continue }
+        $expected["standards/$relative"] = $false
+    }
+
+    $skillDocs = @(Get-ChildItem -LiteralPath $skillRoot -Recurse -File -Filter 'SKILL.md')
+    $skillCount = $skillDocs.Count
+    $routerCount = 0
+
+    foreach ($skill in $skillDocs) {
+        $dirName = $skill.Directory.Name
+        $skillText = [System.IO.File]::ReadAllText($skill.FullName)
+        if ($skillText -notmatch '(?s)\A---\r?\n(.*?)\r?\n---') {
+            Add-Failure "Skill frontmatter missing or not at byte 0: standards/skills/$dirName/SKILL.md"
+            continue
+        }
+        $front = $Matches[1]
+        $nameOk = $front -match '(?m)^name:\s*(\S+)\s*$'
+        if (-not $nameOk -or $Matches[1] -ne $dirName) {
+            Add-Failure "Skill name does not match its directory: standards/skills/$dirName/SKILL.md"
+        }
+        if ($front -notmatch '(?m)^description:\s*\S') {
+            Add-Failure "Skill description missing: standards/skills/$dirName/SKILL.md"
+        }
+
+        $isRouter = $front -match '(?m)^[ ]{2}role:\s*router\s*$'
+        $standardMatch = [regex]::Match($front, '(?m)^[ ]{2}standard:\s*(\S+)\s*$')
+        if ($isRouter) {
+            $routerCount++
+            if ($standardMatch.Success) {
+                Add-Failure "Router skill must not name a standard: standards/skills/$dirName/SKILL.md"
+            }
+            continue
+        }
+        if (-not $standardMatch.Success) {
+            Add-Failure "Skill does not name its standard: standards/skills/$dirName/SKILL.md"
+            continue
+        }
+        $standardRel = $standardMatch.Groups[1].Value
+        if (-not $expected.ContainsKey($standardRel)) {
+            Add-Failure "Skill points at a file that is not a standard: $standardRel ($dirName)"
+            continue
+        }
+        if ($expected[$standardRel]) {
+            Add-Failure "More than one skill points at $standardRel"
+        }
+        $expected[$standardRel] = $true
+
+        $tail = $standardRel.Substring('standards/'.Length)
+        $needle = "](../../$tail)"
+        if ($skillText.IndexOf($needle, [System.StringComparison]::Ordinal) -lt 0) {
+            Add-Failure "Skill body does not link its standard: standards/skills/$dirName/SKILL.md"
+        }
+    }
+
+    if ($routerCount -ne 1) {
+        Add-Failure "Expected exactly one router skill (metadata.role: router). Found $routerCount."
+    }
+
+    foreach ($key in @($expected.Keys)) {
+        if (-not $expected[$key]) {
+            Add-Failure "No skill for $key"
+        }
+    }
+
+    if (Test-Path -LiteralPath $skillReadme) {
+        $readmeText = [System.IO.File]::ReadAllText($skillReadme)
+        foreach ($skill in $skillDocs) {
+            $token = "./$($skill.Directory.Name)/SKILL.md"
+            if ($readmeText.IndexOf($token, [System.StringComparison]::Ordinal) -lt 0) {
+                Add-Failure "standards/skills/README.md does not link $token"
+            }
+        }
+    }
+    else {
+        Add-Failure 'standards/skills/README.md is missing.'
+    }
+
+    $stray = @(
+        Get-ChildItem -LiteralPath $skillRoot -Recurse -File |
+            Where-Object {
+                $relative = ([System.IO.Path]::GetRelativePath($skillRoot, $_.FullName)) -replace '\\', '/'
+                -not ($relative -eq 'README.md' -or $relative -match '^[^/]+/SKILL\.md$')
+            }
+    )
+    foreach ($extra in $stray) {
+        $relative = ([System.IO.Path]::GetRelativePath($root, $extra.FullName)) -replace '\\', '/'
+        Add-Failure "Unexpected file in the skill projection: $relative"
+    }
+}
+
+$checked['Skills'] = $skillCount
 
 # --- Report -------------------------------------------------------------------
 
